@@ -1,3 +1,71 @@
-- Download data
-  - wget -O 'FairfaxCounty.zip' 'https://gwu.box.com/shared/static/wvgmx7n7tbrhuk140t8tm9zkb2z5top9.zip'
-  - d
+## Fairfax County Public Schools (FCPS) Research
+
+This folder contains research regarding Fairfax County Public Schools (FCPS)
+
+## Download Data
+
+To download the data, run the following `wget` command:
+
+```bash
+  wget -O 'FairfaxCounty.zip' 'https://gwu.box.com/shared/static/wvgmx7n7tbrhuk140t8tm9zkb2z5top9.zip'
+  d
+```
+
+## Requirements
+
+Please make sure to install the following Python packages:
+
+```bash
+pip install pandas tqdm PyPDF2 tabula-py
+```
+
+Java must be installed and available in your system’s PATH in order to run `tabula`.
+
+```bash
+java -version
+```
+
+## Folder Structure
+
+```bash
+.
+├── README.md
+├── assets
+├── data
+├── preprocess
+└── test-script-tyler.py
+```
+
+## Schema
+
+Once you retrive the corresponding data using the `wget` command, you will notice that the schema is structured in the following manner:
+
+<table>
+  <tr>
+    <td style="width: 50%;">
+      <img src="assets/FCPS.drawio.svg" alt="First GIF" width="100%">
+    </td>
+  </tr>
+</table>
+
+## Preprocess (In-progress)
+
+This folder will focus on preprocessing data provided by Fairfax County Public Schools (FCPS) to convert it to tabular format for students.
+
+### `get-menus.py`
+
+The following script reads each corresponding Menu `.pdf` and converts it into a tabular format `.csv` of the same information.
+
+$\text{.pdf} \to \text{.csv}$
+
+### `get-production-records.py`
+
+The following script reads each corresponding Production Record Breakfast/Lunch `.html` and converts it into a tabular format `.csv` of the same information.
+
+$\text{.html} \to \text{.csv}$
+
+### `get-sales-reports.py`
+
+The following script reads each corresponding Item Sales Report Breakfast/Lunch `.pdf` and converts it into a tabular format `.csv` of the same information.
+
+$\text{.pdf} \to \text{.csv}$
