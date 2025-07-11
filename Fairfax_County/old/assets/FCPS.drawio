@@ -1,0 +1,165 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36" version="27.1.6">
+  <diagram name="Page-1" id="L2L51VmP0oNM_0vleai0">
+    <mxGraphModel dx="1051" dy="587" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-3" value="FCPS Schools List (.xlsx)" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="160" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-68" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="p3TWz7wsFrIx8KgkdUra-3" source="p3TWz7wsFrIx8KgkdUra-4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="220" y="420" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="-20" y="45" />
+              <mxPoint x="-20" y="420" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-4" value="School Name&amp;nbsp;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="p3TWz7wsFrIx8KgkdUra-3">
+          <mxGeometry y="30" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-5" value="School ID" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="p3TWz7wsFrIx8KgkdUra-3">
+          <mxGeometry y="60" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-6" value="Distribution Kitchen (DK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="p3TWz7wsFrIx8KgkdUra-3">
+          <mxGeometry y="90" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-8" value="FNS Area" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="p3TWz7wsFrIx8KgkdUra-3">
+          <mxGeometry y="120" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-9" value="Level" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="p3TWz7wsFrIx8KgkdUra-3">
+          <mxGeometry y="150" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-10" value="FCPS Region" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="p3TWz7wsFrIx8KgkdUra-3">
+          <mxGeometry y="180" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-11" value="CEP Schools" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="p3TWz7wsFrIx8KgkdUra-3">
+          <mxGeometry y="210" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="p3TWz7wsFrIx8KgkdUra-3" source="p3TWz7wsFrIx8KgkdUra-4" target="p3TWz7wsFrIx8KgkdUra-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-26" value="" style="shape=curlyBracket;whiteSpace=wrap;html=1;rounded=1;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="300" y="80" width="20" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-29" value="School Name" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="320" y="80" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-30" value="Item Sales Report Breakfast/Lunch (PDFs)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="305" y="40" width="230" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-32" value="School ID" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="310" y="110" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-33" value="Date" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="310" y="140" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-34" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.45;entryY=0.146;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="p3TWz7wsFrIx8KgkdUra-4" target="p3TWz7wsFrIx8KgkdUra-26">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-35" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p3TWz7wsFrIx8KgkdUra-5" target="p3TWz7wsFrIx8KgkdUra-32">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-36" value="Sales :" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="310" y="170" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-37" value="ItemID" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="380" y="170" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-38" value="" style="shape=curlyBracket;whiteSpace=wrap;html=1;rounded=1;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="370" y="170" width="20" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-39" value="Description" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="380" y="200" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-40" value="F (Free Meals)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="380" y="230" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-41" value="&lt;span style=&quot;text-align: left;&quot;&gt;R (Reduced-priced meals)&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="375" y="260" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-42" value="P (Full-price meals)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="380" y="290" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-43" value="A (Adults)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="380" y="320" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-44" value="" style="shape=curlyBracket;whiteSpace=wrap;html=1;rounded=1;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="273" y="430" width="20" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-45" value="School Name" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="290" y="440" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-46" value="Production Report by Date Breakfast/Lunch (HTMLs)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="280" y="400" width="300" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-47" value="Production:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="283" y="470" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-59" value="ItemID" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="360" y="480" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-63" value="" style="shape=curlyBracket;whiteSpace=wrap;html=1;rounded=1;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="355" y="480" width="20" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-90" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p3TWz7wsFrIx8KgkdUra-65" target="p3TWz7wsFrIx8KgkdUra-84">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="730" y="525" />
+              <mxPoint x="730" y="835" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-65" value="Item Name" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="370" y="510" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-69" value="Planned (Reimbursable, Non-Reimbursable, Total)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="360" y="540" width="300" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-70" value="Offered" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="355" y="570" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-71" value="Discarded (Total, Percent of Offered, Cost)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="355" y="630" width="267" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-72" value="Subtotal" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="355" y="660" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-74" value="Leftover (Total, Percent of Offered, Cost)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="341.5" y="690" width="277" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-75" value="Production Cost" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="360" y="730" width="107" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-77" value="Served (Reimbursable, Non-Reimbursable, Total)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="363" y="600" width="287" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-80" value="(A la Carte, Earned Meals, Earned A la Carte, Adjusted)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="380" y="350" width="300" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-81" value="Menu (PDFs)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="263.5" y="790" width="300" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-82" value="" style="shape=curlyBracket;whiteSpace=wrap;html=1;rounded=1;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="355" y="820" width="20" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-84" value="Item Name" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="370" y="820" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-85" value="Date" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="360" y="850" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-87" value="QR Code:&amp;nbsp;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="370" y="880" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-88" value="" style="shape=curlyBracket;whiteSpace=wrap;html=1;rounded=1;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="440" y="880" width="20" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p3TWz7wsFrIx8KgkdUra-89" value="Nutrition Information&lt;div&gt;per Item&lt;/div&gt;&lt;div&gt;per School&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="455" y="900" width="80" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

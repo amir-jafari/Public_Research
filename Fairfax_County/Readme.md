@@ -16,13 +16,7 @@ To download the data, run the following `wget` command:
 Please make sure to install the following Python packages:
 
 ```bash
-pip install pandas tqdm PyPDF2 tabula-py
-```
-
-Java must be installed and available in your system’s PATH in order to run `tabula`.
-
-```bash
-java -version
+pip install pandas tqdm PyPDF2 pdfplumber
 ```
 
 ## Folder Structure
