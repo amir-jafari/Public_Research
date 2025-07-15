@@ -44,8 +44,21 @@ def combine_csvs_from_folder(input_dir, output_file, sort_columns=None):
     print(f"Combined CSV saved to {output_file}")
 
 
-input_dir = '/Users/timurabdygulov/Documents/GitHub/Public_Research/Fairfax_County/Tim_test/lunch'
-output_file = '/Users/timurabdygulov/Documents/GitHub/Public_Research/Fairfax_County/Tim_test/breakfast/lunch_combined.csv'
+# ============
+# Breakfast
+# ============
+input_dir = '../../preprocess/html-processing/preprocessed-data/Breakfast production'
+output_file = '../../preprocess/html-processing/preprocessed-data/Breakfast production/breakfast_combined.csv'
+sort_columns = ['School_Name', 'Date', 'Identifier']
+
+combine_csvs_from_folder(input_dir, output_file, sort_columns)
+
+
+# ============
+# Lunch
+# ============
+input_dir = '../../preprocess/html-processing/preprocessed-data/Lunch production'
+output_file = '../../preprocess/html-processing/preprocessed-data/Lunch production/lunch_combined.csv'
 sort_columns = ['School_Name', 'Date', 'Identifier']
 
 combine_csvs_from_folder(input_dir, output_file, sort_columns)
