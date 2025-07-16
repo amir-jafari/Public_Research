@@ -34,8 +34,8 @@ if not st.session_state.authenticated:
     st.stop()
 
 # --- LOGO URLs (update paths accordingly) ---
-fcps_logo_url = "../../demo/FCPS-logo.png"
-gw_logo_url = "../../demo/gw-logo.png"
+fcps_logo_url = "FCPS-logo.png"
+gw_logo_url = "gw-logo.png"
 
 # --- HEADER SECTION ---
 header_col1, header_col2, header_col3 = st.columns([1, 5, 1])
@@ -200,7 +200,7 @@ def sales_panel(sidebar):
         df = pd.read_csv(uploaded_file)
     else:
         try:
-            df = pd.read_csv('../../data/preprocessed-data/sales.csv')
+            df = pd.read_csv('../../Data/preprocessed-data/sales.csv')
         except FileNotFoundError:
             st.error("sales.csv not found.")
             st.stop()
