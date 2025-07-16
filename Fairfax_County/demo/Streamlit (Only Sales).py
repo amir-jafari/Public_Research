@@ -34,8 +34,8 @@ if not st.session_state.authenticated:
     st.stop()
 
 # --- LOGO URLs (update paths accordingly) ---
-fcps_logo_url = "/Users/sayanpatra/Desktop/Screenshot 2025-07-16 at 3.34.32 PM.png"
-gw_logo_url = "/Users/sayanpatra/Downloads/gw-logo.png"
+fcps_logo_url = "../../demo/FCPS-logo.png"
+gw_logo_url = "../../demo/gw-logo.png"
 
 # --- HEADER SECTION ---
 header_col1, header_col2, header_col3 = st.columns([1, 5, 1])
