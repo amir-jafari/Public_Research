@@ -200,7 +200,7 @@ def sales_panel(sidebar):
         df = pd.read_csv(uploaded_file)
     else:
         try:
-            df = pd.read_csv('../../data/preprocessed-data/sales.csv')
+            df = pd.read_csv('../data/preprocessed-data/sales.csv')
         except FileNotFoundError:
             st.error("sales.csv not found.")
             st.stop()
