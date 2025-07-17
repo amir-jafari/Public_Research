@@ -10,7 +10,7 @@ from folium.plugins import FeatureGroupSubGroup
 from pathlib import Path
 
 # Assuming your dataframe is named 'df'
-df = pd.read_csv("Fairfax_County/Data/preprocessed-data/data_breakfast_with_coordinates.csv", low_memory=False)
+df = pd.read_csv("../../data/preprocessed-data/data_breakfast_with_coordinates.csv", low_memory=False)
 
 # Clean cost columns safely
 cost_columns = ['Discarded_Cost', 'Subtotal_Cost', 'Left_Over_Cost', 'Production_Cost_Total']
