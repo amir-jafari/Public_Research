@@ -228,7 +228,7 @@ school_geo = df.groupby(['School Name', 'latitude', 'longitude']).agg({
 }).reset_index()
 
 # Create the map
-fig_map = px.scatter_map(
+fig_map = px.scatter_geo(
     school_geo,
     lat='latitude',
     lon='longitude',
@@ -241,7 +241,7 @@ fig_map = px.scatter_map(
         'latitude': False,
         'longitude': False
     },
-    zoom=10,
+
     title='School Breakfast Program: Costs and Waste'
 )
 
@@ -258,7 +258,7 @@ fig_map.show()
 fig = go.Figure()
 
 # Add cost layer
-fig.add_trace(go.Scattermap(
+fig.add_trace(go.Scattermapbox(
     lat=school_geo['latitude'],
     lon=school_geo['longitude'],
     mode='markers',
@@ -273,7 +273,7 @@ fig.add_trace(go.Scattermap(
 ))
 
 # Add waste layer
-fig.add_trace(go.Scattermap(
+fig.add_trace(go.Scattermapbox(
     lat=school_geo['latitude'],
     lon=school_geo['longitude'],
     mode='markers',
