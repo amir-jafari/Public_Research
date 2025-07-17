@@ -16,7 +16,7 @@ To download the data, run the following `wget` command:
 Please make sure to install the following Python packages:
 
 ```bash
-pip install pandas tqdm PyPDF2 pdfplumber plotly
+pip install pandas tqdm PyPDF2 pdfplumber plotly streamlit streamlit_folium geojson
 ```
 
 ## Folder Structure
