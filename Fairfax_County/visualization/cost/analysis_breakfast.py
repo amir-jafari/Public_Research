@@ -311,7 +311,7 @@ fig.show()
 
 #%%
 # --- Load Data ---
-with open('Fairfax_County/Data/School_Regions.geojson', 'r') as f:
+with open('../../data/preprocessed-data/School_Regions.geojson', 'r') as f:
     geojson_data = geojson.load(f)
 
 school_stats = df.groupby('School Name').agg({
