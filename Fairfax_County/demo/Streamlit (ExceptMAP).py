@@ -368,7 +368,7 @@ def production_panel(sidebar):
 
 
     if prod_type == "Breakfast":
-        data_path = "../Data/preprocessed-data/Breakfast_cost.csv"
+        data_path = "../Data/preprocessed-data/data_breakfast_with_coordinates.csv"
         #geojson_path = "/Users/sayanpatra/Downloads/School_Regions.geojson"
        # map_path = "/Users/sayanpatra/Downloads/improved_breakfast_map.html"
         try:
@@ -378,7 +378,7 @@ def production_panel(sidebar):
             return
 
     elif prod_type == "Lunch":
-        data_path = "../Data/preprocessed-data/Lunch_cost.csv"
+        data_path = "../Data/preprocessed-data/data_lunch_with_coordinates.csv"
         #geojson_path = "/Users/sayanpatra/Downloads/School_Regions.geojson"
         #map_path = "/Users/sayanpatra/Downloads/improved_lunch_map.html"
         try:
@@ -388,8 +388,8 @@ def production_panel(sidebar):
             return
 
     else:  # Consolidated
-        breakfast_path = "../Data/preprocessed-data/Breakfast_cost.csv"
-        lunch_path = "../Data/preprocessed-data/Lunch_cost.csv"
+        breakfast_path = "../Data/preprocessed-data/data_breakfast_with_coordinates.csv"
+        lunch_path = "../Data/preprocessed-data/data_lunch_with_coordinates.csv"
         #map_path = "improved_consolidated_map.html"
 
         try:
