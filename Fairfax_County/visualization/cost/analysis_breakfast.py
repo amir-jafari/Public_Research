@@ -7,10 +7,10 @@ import folium
 import geojson
 import random
 from folium.plugins import FeatureGroupSubGroup
-
+from pathlib import Path
 
 # Assuming your dataframe is named 'df'
-df = pd.read_csv("Fairfax_County/Tim_test/data_breakfast_with_coordinates.csv", low_memory=False)
+df = pd.read_csv("Fairfax_County/Data/preprocessed-data/data_breakfast_with_coordinates.csv", low_memory=False)
 
 # Clean cost columns safely
 cost_columns = ['Discarded_Cost', 'Subtotal_Cost', 'Left_Over_Cost', 'Production_Cost_Total']
@@ -78,6 +78,28 @@ fig3 = px.sunburst(
 )
 
 fig3.show()
+
+#%%
+# Second verions of # --- FIGURE 3 ---
+
+# Get top 5 most costly menu items overall
+top_items = df.groupby('Name')['Production_Cost_Total'].sum().nlargest(5).index
+
+# Filter the dataframe to only include these items
+filtered_df = df[df['Name'].isin(top_items)]
+
+# Generate sunburst chart
+fig3 = px.sunburst(
+    filtered_df,
+    path=['School Name', 'Name'],
+    values='Production_Cost_Total',
+    title='Cost Distribution: Schools and Top 5 Menu Items (Overall)'
+)
+fig3.show()
+
+#%%
+
+
 
 #%%
 # =====================
@@ -289,7 +311,7 @@ fig.show()
 
 #%%
 # --- Load Data ---
-with open('Fairfax_County/Tim_test/School_Regions.geojson', 'r') as f:
+with open('Fairfax_County/Data/School_Regions.geojson', 'r') as f:
     geojson_data = geojson.load(f)
 
 school_stats = df.groupby('School Name').agg({

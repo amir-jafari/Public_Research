@@ -10,7 +10,7 @@ from folium.plugins import FeatureGroupSubGroup
 
 
 # Assuming your dataframe is named 'df'
-df = pd.read_csv("Fairfax_County/Tim_test/data_lunch_with_coordinates.csv", low_memory=False)
+df = pd.read_csv("Fairfax_County/Data/preprocessed-data/data_lunch_with_coordinates.csv", low_memory=False)
 
 # Clean cost columns safely
 cost_columns = ['Discarded_Cost', 'Subtotal_Cost', 'Left_Over_Cost', 'Production_Cost_Total']
@@ -220,7 +220,7 @@ fig_map = px.scatter_map(
         'longitude': False
     },
     zoom=10,
-    title='School Breakfast Program: Costs and Waste'
+    title='School Lunch Program: Costs and Waste'
 )
 
 # Use open-street-map styling (free, no token needed)
@@ -289,7 +289,7 @@ fig.show()
 
 #%%
 # --- Load Data ---
-with open('Fairfax_County/Tim_test/School_Regions.geojson', 'r') as f:
+with open('Fairfax_County/Data/School_Regions.geojson', 'r') as f:
     geojson_data = geojson.load(f)
 
 school_stats = df.groupby('School Name').agg({
