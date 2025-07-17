@@ -6,7 +6,7 @@ from datetime import datetime
 import os
 import numpy as np
 
-os.chdir('../data/preprocessed-data')
+# os.chdir('../data/preprocessed-data')
 
 # Set page config
 st.set_page_config(
@@ -19,7 +19,7 @@ st.set_page_config(
 st.title("📊 Sales EDA")
 st.markdown("Exploratory Data Analysis of FCPS meal sales data.")
 
-df = pd.read_csv('sales.csv')
+df = pd.read_csv('../data/preprocessed-data/sales.csv')
 
 # Convert date to datetime
 df['date'] = pd.to_datetime(df['date'])
@@ -399,4 +399,4 @@ st.markdown("---")
 st.markdown("*Dashboard created using Streamlit and Plotly*")
 st.markdown("Author: Tyler Wallett.")
 
-os.chdir('../../demo')
+# os.chdir('../../demo')
