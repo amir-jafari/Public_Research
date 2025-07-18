@@ -9,9 +9,6 @@ import random
 from folium.plugins import FeatureGroupSubGroup
 from streamlit_folium import folium_static
 import numpy as np
-# import os
-
-# os.chdir("../../data/preprocessed-data")
 
 # Set page config
 st.set_page_config(
@@ -239,15 +236,28 @@ if selected_viz == "Total Cost by School":
     total_costs = display_df.groupby('School Name')['Production_Cost_Total'].sum()
     top_schools = total_costs.sort_values(ascending=False)
 
-    if max_schools != "All":
-        top_schools = top_schools.head(int(max_schools))
+    if selected_school != "All Schools":
+        # Skip top-N filtering and use just the selected school
+        display_df = school_summary[school_summary['School Name'] == selected_school]
+    else:
+        # Continue with top-N and cost filtering logic
+        display_df = school_summary.groupby(['School Name', 'Meal'], observed=True)[
+            'Production_Cost_Total'].sum().reset_index()
 
-    display_df = display_df[display_df['School Name'].isin(top_schools.index)]
+        total_costs = display_df.groupby('School Name')['Production_Cost_Total'].sum()
+        top_schools = total_costs.sort_values(ascending=False)
 
-    # Filter by cost range (total per school)
-    school_totals = display_df.groupby('School Name')['Production_Cost_Total'].sum()
-    schools_in_range = school_totals[(school_totals >= cost_range[0]) & (school_totals <= cost_range[1])].index
-    display_df = display_df[display_df['School Name'].isin(schools_in_range)]
+        if max_schools != "All":
+            top_schools = top_schools.head(int(max_schools))
+
+        display_df = display_df[display_df['School Name'].isin(top_schools.index)]
+
+        # Cost range filter
+        school_totals = display_df.groupby('School Name')['Production_Cost_Total'].sum()
+        schools_in_range = school_totals[
+            (school_totals >= cost_range[0]) & (school_totals <= cost_range[1])
+            ].index
+        display_df = display_df[display_df['School Name'].isin(schools_in_range)]
 
     # Plot
     if not display_df.empty:
@@ -281,6 +291,16 @@ if selected_viz == "Total Cost by School":
     else:
         st.warning("No schools match the current filters")
 
+    with st.expander("ℹ️ About this visualization"):
+        st.markdown("""
+        This bar chart shows the **total meal production cost** for each school.
+
+        **Calculation:**
+        - Total cost per school is the sum of `Production_Cost_Total` across all menu items and dates.
+
+        **Goal:**
+        Provide a high-level view of spending distribution across schools — useful for identifying high-cost schools and assessing budgeting equity system-wide.
+        """)
 
 # ---------------------------------------------------------------------------------------------------------
 
@@ -300,7 +320,7 @@ elif selected_viz == "Cost Over Time by Menu Item":
     )
 
     # Filtered data based on menu item selection
-    filtered_data = df[df['Name'].isin(selected_items)] if selected_items else df
+    filtered_data = apply_filters(df, selected_school, date_range, selected_items)
 
     # Summary Metrics (dynamic)
     col1, col2, col3 = st.columns(3)
@@ -327,6 +347,21 @@ elif selected_viz == "Cost Over Time by Menu Item":
         margin=dict(l=50, r=50, b=100, t=50, pad=4)
     )
     st.plotly_chart(fig, use_container_width=True)
+
+    with st.expander("ℹ️ About this visualization"):
+        st.markdown("""
+        This line chart shows how the **total production cost** for each menu item has changed over time.
+
+        **Calculation:**
+        - For each menu item and date, total cost is aggregated as:
+
+            `Production_Cost_Total` = sum of all production costs for that item on that day
+
+        - Values are grouped by item (`Name`) and date (`Date`).
+
+        **Goal:**
+        Track cost trends for each menu item over time — to identify price increases, operational changes, or seasonal shifts in production volumes.
+        """)
 
 # ---------------------------------------------------------------------------------------------------------
 
@@ -371,7 +406,7 @@ elif selected_viz == "Cost Distribution: Schools and Menu Items":
     )
 
     # 3. APPLY FILTERS
-    viz_df = df.copy()
+    viz_df = apply_filters(df, selected_school, date_range, menu_items)
 
     if 'date_range' in locals() and len(date_range) == 2:
         start_date, end_date = date_range
@@ -454,7 +489,22 @@ elif selected_viz == "Cost Distribution: Schools and Menu Items":
     # else:
     #     st.warning("No data matches all filter criteria")
 
+    with st.expander("ℹ️ About this visualization"):
+        st.markdown("""
+        This **sunburst chart** displays the **hierarchical distribution of production costs**, starting from schools and drilling down to individual menu items.
 
+        - Outer segments represent **menu items**, nested within their **respective schools**.
+        - The **size** of each segment indicates the **total production cost**.
+        - The **color gradient** reflects the **average cost per serving**.
+
+        **Sidebar filters** let you:
+        - Choose how many schools to include (the chart shows the top 10 by default, but you can add more or select all)
+        - Exclude specific menu items
+        - Apply a cost-per-serving filter to narrow the focus
+
+        **Goal:**
+        Understand how production costs are distributed across schools and menus — and uncover which items or locations contribute most to total spending.
+        """)
 
 # ---------------------------------------------------------------------------------------------------------
     
@@ -569,7 +619,27 @@ elif selected_viz == "Top Schools by Food Waste Cost":
 
     st.plotly_chart(fig, use_container_width=True)
 
+    with st.expander("ℹ️ About this visualization"):
+        st.markdown("""
+        This bar chart shows the **total food waste cost** for each school, optionally separated by meal type (Breakfast vs. Lunch).
 
+        **Calculation Details:**
+        - The waste cost is computed using the formula:
+            - `Total_Waste_Cost` = `Left_Over_Cost` + `Discarded_Cost`
+
+        - These values are taken directly from the columns:
+            - `Left_Over_Cost`: estimated cost of food prepared but left over
+            - `Discarded_Cost`: estimated cost of food thrown away or spoiled
+        - Aggregation is done at the school level (and by `Meal` if comparison is enabled), using `groupby()` and `sum()`.
+
+        **How to use this chart:**
+        - Spot schools with the highest combined food waste impact
+        - Use the sidebar to limit the number of schools or filter by waste cost range
+        - Toggle between current meal view or both meals to analyze trends
+
+        **Goal:**
+        Help identify cost-saving opportunities by reducing waste in the most affected schools.
+        """)
 
 # ---------------------------------------------------------------------------------------------------------
 
@@ -630,23 +700,32 @@ elif selected_viz == "Top Wasted Menu Items":
         )
 
     # Now safe to use filtered_df and define grouped
-    grouped = filtered_df.groupby(['Name', 'Meal'], observed=True)['Total_Waste_Cost'].sum().reset_index()
-    grouped = grouped[(grouped['Total_Waste_Cost'] >= item_waste_range[0]) &
-                      (grouped['Total_Waste_Cost'] <= item_waste_range[1])]
+    # 1. Apply global filters
+    filtered_df = apply_filters(df, selected_school, date_range, menu_items)
 
+    # 2. Inject 'Meal' column for grouping
+    filtered_df["Meal"] = meal_type.split()[0]  # 'Breakfast' or 'Lunch'
+
+    # 3. Group once
+    grouped = filtered_df.groupby(['Name', 'Meal'], observed=True)['Total_Waste_Cost'].sum().reset_index()
+
+    # 4. Apply waste cost range from sidebar
+    grouped = grouped[
+        (grouped['Total_Waste_Cost'] >= item_waste_range[0]) &
+        (grouped['Total_Waste_Cost'] <= item_waste_range[1])
+        ]
+
+    # 5. Determine top N items
     top_items = (
         grouped.groupby('Name')['Total_Waste_Cost']
         .sum()
         .sort_values(ascending=False)
-        .head(num_items)
+        .head(None if num_items == "All" else int(num_items))
         .index
     )
-    grouped = grouped[grouped['Name'].isin(top_items)]
 
-    # Aggregate and filter
-    grouped = filtered_df.groupby(['Name', 'Meal'], observed=True)['Total_Waste_Cost'].sum().reset_index()
-    grouped = grouped[(grouped['Total_Waste_Cost'] >= item_waste_range[0]) &
-                      (grouped['Total_Waste_Cost'] <= item_waste_range[1])]
+    # 6. Final subset
+    grouped = grouped[grouped['Name'].isin(top_items)]
 
     # Determine top items overall
     top_items = (
@@ -691,6 +770,27 @@ elif selected_viz == "Top Wasted Menu Items":
     )
 
     st.plotly_chart(fig, use_container_width=True)
+
+    with st.expander("ℹ️ About this visualization"):
+        st.markdown("""
+        This chart shows the **menu items that contribute the most to food waste costs**, optionally grouped by meal type (Breakfast vs. Lunch).
+
+        **Calculation Details:**
+        - The waste cost for each item is calculated using:
+
+            `Total_Waste_Cost` = `Left_Over_Cost` + `Discarded_Cost`
+
+        - Grouping is done by `Name` (menu item) and optionally `Meal`.
+        - Totals are then aggregated using `groupby()` and `sum()`.
+
+        **Sidebar Options:**
+        - Filter by total waste cost range
+        - Limit how many menu items are shown
+        - Toggle between one or both meals
+
+         **Goal:**
+        Identify menu items that are driving the highest waste costs system-wide — to inform menu redesign, portion adjustments, or staff training.
+        """)
 
 # ---------------------------------------------------------------------------------------------------------
 
@@ -756,8 +856,8 @@ elif selected_viz == "Cost Deviation by School":
         total_positive = plot_df[plot_df['Cost_Deviation'] > 0]['Cost_Deviation'].sum()
         st.metric("Total Overruns", f"${total_positive:,.2f}")
     with col3:
-        total_negative = plot_df[plot_df['Cost_Deviation'] < 0]['Cost_Deviation'].sum()
-        st.metric("Total Underspends", f"${total_negative:,.2f}")
+        total_underspend_abs = abs(plot_df[plot_df['Cost_Deviation'] < 0]['Cost_Deviation'].sum())
+        st.metric("Total Underspends", f"${total_underspend_abs:,.2f}")
 
     # Plot
     fig = px.box(
@@ -778,6 +878,41 @@ elif selected_viz == "Cost Deviation by School":
 
     st.plotly_chart(fig, use_container_width=True)
 
+    with st.expander("ℹ️ About this visualization"):
+        st.markdown("""
+        This box plot shows the **distribution of cost deviations** across schools — how much actual production cost differed from planned expectations.
+
+        **Calculation Details:**
+        - Cost deviation is calculated per record as:
+
+            `Cost_Deviation` = `Production_Cost_Total` - `Planned_Cost`
+
+        - Where:
+            - `Production_Cost_Total`: actual spending on the meal
+            - `Planned_Cost`: estimated/planned cost, computed as:
+
+              `Planned_Cost` = `Planned_Total` × (`Subtotal_Cost` / `Served_Total`)
+
+        - Values are grouped by `School Name` and visualized in a box plot.
+
+        **Interpreting Cost Deviation:**
+        - **Positive** → overspending (actual > plan)
+        - **Negative** → underspending (actual < plan)
+        - **Zero** → on budget
+
+        **Dashboard Metrics:**
+        - **Total Overruns**: sum of all positive deviations
+        - **Total Underspends**: sum of all negative deviations, displayed as a positive value (absolute)
+
+        ⚠️ In the current dataset, nearly all schools show **negative cost deviations**, meaning they consistently spend **less than planned**.
+        This may be due to:
+        - Conservative or inflated planning assumptions
+        - Low `Served_Total` values affecting cost-per-serving math
+        - Actual efficiencies in food preparation
+
+        **Goal:**
+        Reveal how closely each school’s actual production cost aligns with planned budgets — helping identify schools that consistently overspend or underspend, and informing adjustments to forecasting and planning practices.
+        """)
 
 # ---------------------------------------------------------------------------------------------------------
 
@@ -875,6 +1010,29 @@ elif selected_viz == "Popularity vs. Waste by Menu Item":
 
     st.plotly_chart(fig, use_container_width=True)
 
+    with st.expander("ℹ️ About this visualization"):
+        st.markdown("""
+        This scatter plot visualizes the relationship between **menu item popularity** and **food waste cost**.
+
+        **Axes and Metrics:**
+        - **X-axis**: `Served_Total` — total number of servings for each menu item (a proxy for popularity)
+        - **Y-axis**: `Total_Waste_Cost` — the cost of uneaten food for that item, calculated as:
+
+            `Total_Waste_Cost` = `Left_Over_Cost` + `Discarded_Cost`
+
+        - **Marker size** and **color** both represent the `Total_Waste_Cost` — larger, lighter dots mean more waste
+
+        **How to use this chart:**
+        - Items **high on the Y-axis** → high waste cost (may need review)
+        - Items **far right on the X-axis** → very popular
+        - Items in the **top-right quadrant** → popular **and** highly wasteful — strong candidates for optimization
+        - Items in the **bottom-left** → low popularity and low waste — likely not significant
+        - Items in the **top-left** → low popularity but high waste — possible red flags (e.g., disliked or misplanned items)
+
+        **Goal:**
+        Help identify which menu items are both widely served and prone to waste, supporting smarter menu planning and cost control.
+        """)
+
 
 # ---------------------------------------------------------------------------------------------------------
 
@@ -964,6 +1122,26 @@ elif selected_viz == "Average Food Waste by Day of Week":
 
     st.plotly_chart(fig, use_container_width=True)
 
+    with st.expander("ℹ️ About this visualization"):
+        st.markdown("""
+        This bar chart shows the **average food waste cost** for each day of the week across all schools and menu items.
+
+        **Calculation:**
+        - For each record, total waste cost is calculated as:
+
+            `Total_Waste_Cost` = `Left_Over_Cost` + `Discarded_Cost`
+
+        - Then grouped by day of the week and averaged:
+
+            `Avg_Waste_Cost` = mean of `Total_Waste_Cost` per day
+
+        - The day of week is derived from the `Date` column.
+
+        **Goal:**
+        Reveal whether certain weekdays are associated with consistently higher or lower food waste — helping adjust planning, staffing, or portioning strategies by day.
+        """)
+
+
 # ---------------------------------------------------------------------------------------------------------
 
 elif selected_viz == "Cost per Student by Region":
@@ -1049,7 +1227,20 @@ elif selected_viz == "Cost per Student by Region":
 
     st.plotly_chart(fig, use_container_width=True)
 
+    with st.expander("ℹ️ About this visualization"):
+        st.markdown("""
+        This bar chart compares the **average meal production cost per student** across different FCPS regions.
 
+        **Calculation:**
+        - For each record, cost per student is calculated as:
+
+            `Cost_Per_Student` = `Production_Cost_Total` / `Served_Total`
+
+        - These per-record values are then grouped by `FCPS Region` and averaged.
+
+        **Goal:**
+        Identify regional differences in cost-efficiency — to assess operational consistency, budget fairness, and whether some areas require closer attention to cost drivers.
+        """)
 
 # ---------------------------------------------------------------------------------------------------------
 
@@ -1061,7 +1252,7 @@ elif selected_viz == "Geographic Distribution of Costs and Waste":
 
     required_columns = {'latitude', 'longitude', 'School Name', 'Production_Cost_Total', 'Total_Waste_Cost'}
     if not required_columns.issubset(filtered_df.columns):
-        st.warning("⚠️ Required columns (latitude, longitude, costs) not found in data.")
+        st.warning("Required columns (latitude, longitude, costs) not found in data.")
         st.stop()
 
     if filtered_df.empty:
@@ -1075,32 +1266,44 @@ elif selected_viz == "Geographic Distribution of Costs and Waste":
     }).reset_index()
 
     # Add sliders for filtering
-    with st.sidebar:
-        st.subheader("Map Filters")
-
-        cost_range = st.slider(
-            "Production Cost Range ($)",
-            min_value=0,
-            max_value=int(school_geo['Production_Cost_Total'].max()),
-            value=(0, int(school_geo['Production_Cost_Total'].max())),
-            step=100
+    # If only one school is selected, skip sliders entirely
+    if selected_school != "All Schools":
+        school_geo = school_geo[school_geo['School Name'] == selected_school]
+        cost_range = (
+            int(school_geo['Production_Cost_Total'].min()),
+            int(school_geo['Production_Cost_Total'].max())
         )
-
-        waste_range = st.slider(
-            "Waste Cost Range ($)",
-            min_value=0,
-            max_value=int(school_geo['Total_Waste_Cost'].max()),
-            value=(0, int(school_geo['Total_Waste_Cost'].max())),
-            step=50
+        waste_range = (
+            int(school_geo['Total_Waste_Cost'].min()),
+            int(school_geo['Total_Waste_Cost'].max())
         )
+    else:
+        with st.sidebar:
+            st.subheader("Map Filters")
 
-    # Apply the filters
-    school_geo = school_geo[
-        (school_geo['Production_Cost_Total'] >= cost_range[0]) &
-        (school_geo['Production_Cost_Total'] <= cost_range[1]) &
-        (school_geo['Total_Waste_Cost'] >= waste_range[0]) &
-        (school_geo['Total_Waste_Cost'] <= waste_range[1])
-        ]
+            cost_range = st.slider(
+                "Production Cost Range ($)",
+                min_value=0,
+                max_value=int(school_geo['Production_Cost_Total'].max()),
+                value=(0, int(school_geo['Production_Cost_Total'].max())),
+                step=100
+            )
+
+            waste_range = st.slider(
+                "Waste Cost Range ($)",
+                min_value=0,
+                max_value=int(school_geo['Total_Waste_Cost'].max()),
+                value=(0, int(school_geo['Total_Waste_Cost'].max())),
+                step=50
+            )
+
+        # Apply slider filtering only in "All Schools" mode
+        school_geo = school_geo[
+            (school_geo['Production_Cost_Total'] >= cost_range[0]) &
+            (school_geo['Production_Cost_Total'] <= cost_range[1]) &
+            (school_geo['Total_Waste_Cost'] >= waste_range[0]) &
+            (school_geo['Total_Waste_Cost'] <= waste_range[1])
+            ]
 
     # Summary metrics
     col1, col2, col3 = st.columns(3)
@@ -1138,6 +1341,23 @@ elif selected_viz == "Geographic Distribution of Costs and Waste":
 
     st.plotly_chart(fig, use_container_width=True)
 
+    st.text(" ")
+    st.text(" ")
+
+    with st.expander("ℹ️ About this visualization"):
+        st.markdown("""
+        This interactive map shows the **geographic distribution** of both **meal production costs** and **food waste costs** across schools.
+
+        **Visualization Details:**
+        - Each school is plotted by its geographic coordinates (`latitude`, `longitude`)
+        - Marker size or color intensity typically represents:
+            - `Production_Cost_Total` (total cost)
+            - or `Total_Waste_Cost` = `Left_Over_Cost` + `Discarded_Cost`
+        - Hovering reveals school-level details
+
+        **Goal:**
+        Help spatially identify clusters of high spending or high waste — to uncover geographic patterns, highlight operational outliers, or guide targeted field interventions.
+        """)
 
 # ---------------------------------------------------------------------------------------------------------
 
@@ -1161,53 +1381,71 @@ elif selected_viz == "Interactive School Map with Layers":
         st.warning("No schools match the selected filters.")
         st.stop()
 
+    # Determine if we're in single-school mode
+    is_single_school = selected_school != "All Schools"
+
     # ---------------- Sidebar controls ----------------
-    with st.sidebar:
-        st.subheader("Map Display Filters")
-
-        # Show which layer
-        layer_option = st.radio(
-            "Layer View",
-            options=["Show Costs", "Show Waste", "Show Both"],
-            index=2,
-            horizontal=False,
-            key="layer_selector"
+    if is_single_school:
+        # Don't apply sliders — just let the selected school pass through
+        cost_range = (
+            float(school_geo['Production_Cost_Total'].min()),
+            float(school_geo['Production_Cost_Total'].max())
         )
-
-        cost_range = st.slider(
-            "Production Cost Range ($)",
-            min_value=0,
-            max_value=int(school_geo['Production_Cost_Total'].max()),
-            value=(0, int(school_geo['Production_Cost_Total'].max())),
-            step=100,
-            key="map_cost_range"
+        waste_range = (
+            float(school_geo['Total_Waste_Cost'].min()),
+            float(school_geo['Total_Waste_Cost'].max())
         )
+        layer_option = "Show Both"
+        top_n = "All"
+    else:
+        with st.sidebar:
+            st.subheader("Map Display Filters")
 
-        waste_range = st.slider(
-            "Waste Cost Range ($)",
-            min_value=0,
-            max_value=int(school_geo['Total_Waste_Cost'].max()),
-            value=(0, int(school_geo['Total_Waste_Cost'].max())),
-            step=50,
-            key="map_waste_range"
-        )
+            layer_option = st.radio(
+                "Layer View",
+                options=["Show Costs", "Show Waste", "Show Both"],
+                index=2,
+                horizontal=False,
+                key="layer_selector"
+            )
 
-        top_n = st.selectbox(
-            "Number of Schools to Display",
-            options=[10, 20, 30, 50, 100, "All"],
-            index=2,
-            key="map_school_count"
-        )
+            cost_range = st.slider(
+                "Production Cost Range ($)",
+                min_value=0,
+                max_value=int(school_geo['Production_Cost_Total'].max()),
+                value=(0, int(school_geo['Production_Cost_Total'].max())),
+                step=100,
+                key="map_cost_range"
+            )
 
-    # ---------------- Filtering ----------------
-    school_geo = school_geo[
-        (school_geo['Production_Cost_Total'] >= cost_range[0]) &
-        (school_geo['Production_Cost_Total'] <= cost_range[1]) &
-        (school_geo['Total_Waste_Cost'] >= waste_range[0]) &
-        (school_geo['Total_Waste_Cost'] <= waste_range[1])
-    ]
+            waste_range = st.slider(
+                "Waste Cost Range ($)",
+                min_value=0,
+                max_value=int(school_geo['Total_Waste_Cost'].max()),
+                value=(0, int(school_geo['Total_Waste_Cost'].max())),
+                step=50,
+                key="map_waste_range"
+            )
 
-    if top_n != "All":
+            top_n = st.selectbox(
+                "Number of Schools to Display",
+                options=[10, 20, 30, 50, 100, "All"],
+                index=2,
+                key="map_school_count"
+            )
+
+        # Only apply slider filters in multi-school mode
+        school_geo = school_geo[
+            (school_geo['Production_Cost_Total'] >= cost_range[0]) &
+            (school_geo['Production_Cost_Total'] <= cost_range[1]) &
+            (school_geo['Total_Waste_Cost'] >= waste_range[0]) &
+            (school_geo['Total_Waste_Cost'] <= waste_range[1])
+            ]
+
+        if top_n != "All":
+            school_geo = school_geo.sort_values("Production_Cost_Total", ascending=False).head(int(top_n))
+
+    if top_n != "All" and not is_single_school:
         school_geo = school_geo.sort_values("Production_Cost_Total", ascending=False).head(int(top_n))
 
     if school_geo.empty:
@@ -1215,13 +1453,18 @@ elif selected_viz == "Interactive School Map with Layers":
         st.stop()
 
     # ---------------- Summary ----------------
-    col1, col2, col3 = st.columns(3)
+    all_menu_items = df['Name'].dropna().unique()
+    num_selected_menu_items = len(menu_items) if menu_items else len(all_menu_items)
+
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.metric("Schools Displayed", school_geo['School Name'].nunique())
     with col2:
         st.metric("Total Cost", f"${school_geo['Production_Cost_Total'].sum():,.2f}")
     with col3:
         st.metric("Total Waste", f"${school_geo['Total_Waste_Cost'].sum():,.2f}")
+    with col4:
+        st.metric("Menu Items Selected", f"{num_selected_menu_items} / {len(all_menu_items)}")
 
     # ---------------- Map Layers ----------------
     fig = go.Figure()
@@ -1260,9 +1503,8 @@ elif selected_viz == "Interactive School Map with Layers":
 
     # ---------------- Layout ----------------
     fig.update_layout(
-        # title="Interactive School Map: Costs and Waste",
         geo=dict(
-            scope='usa',  # or 'world' if your schools are international
+            scope='usa',
             projection_type='equirectangular',
             showland=True,
             landcolor="rgb(243, 243, 243)",
@@ -1279,6 +1521,29 @@ elif selected_viz == "Interactive School Map with Layers":
     st.plotly_chart(fig, use_container_width=True)
 
 
+    st.text(" ")
+    st.text(" ")
+
+    with st.expander("ℹ️ About this visualization"):
+        st.markdown("""
+        This interactive map displays all schools with toggleable visual layers focused on **cost** and **waste**.
+
+        **Visualization Features:**
+        - Map markers for each school plotted by latitude and longitude
+        - Two primary layers:
+          - **Production Costs**: marker color/size reflects `Production_Cost_Total`
+          - **Food Waste Costs**: marker color/size reflects `Total_Waste_Cost` (`Left_Over_Cost` + `Discarded_Cost`)
+        - Sidebar filters allow:
+          - Selecting which layer to display
+          - Filtering schools by cost/waste range
+          - Limiting number of schools shown
+
+        **Goal:**
+        Explore spatial distributions of cost vs. waste to identify high-impact schools — helping in strategic planning and spatial analysis.
+        """)
+
+# ---------------------------------------------------------------------------------------------------------
+
 elif selected_viz == "Enhanced School Region Map":
     # st.header("🗺️ Enhanced School Region Map")
 
@@ -1291,7 +1556,8 @@ elif selected_viz == "Enhanced School Region Map":
         st.stop()
 
     # Group and aggregate school data
-    school_stats = df.groupby('School Name').agg({
+    filtered_df = apply_filters(df, selected_school, date_range, menu_items)
+    school_stats = filtered_df.groupby(['School Name']).agg({
         'latitude': 'first',
         'longitude': 'first',
         'Production_Cost_Total': 'sum',
@@ -1373,6 +1639,25 @@ elif selected_viz == "Enhanced School Region Map":
     # Display map in Streamlit
     folium_static(m, width=1200, height=650)
 
+    with st.expander("ℹ️ About this visualization"):
+        st.markdown("""
+        This map provides a detailed visual of all schools by region, highlighting differences in meal costs and food waste across geographic areas.
+
+        **What it shows:**
+        - Each school is placed on the map based on its real location
+        - Colors or sizes may reflect:
+          - How much the school spends on meals
+          - How much food is being wasted
+
+        **⚠️ Important Note:**
+        - This map is a **pre-created visual** that doesn't respond to sidebar filters or real-time selections
+        - It’s designed to give a **broad overview**, not to be interactive with the rest of the dashboard
+
+        **Goal:**
+        Offer a big-picture view of how different areas compare on cost and waste — helpful for understanding regional patterns at a glance.
+        """)
+
+# ---------------------------------------------------------------------------------------------------------
 
 # Footer
 st.markdown("---")
