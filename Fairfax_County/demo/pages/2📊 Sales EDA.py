@@ -3,6 +3,8 @@ import streamlit as st
 import plotly.express as px
 import pandas as pd
 from datetime import datetime
+from pathlib import Path
+
 
 # Set page config
 st.set_page_config(
@@ -15,7 +17,12 @@ st.set_page_config(
 st.title("📊 Sales EDA")
 st.markdown("Exploratory Data Analysis of FCPS meal sales data.")
 
-df = pd.read_csv('../data/preprocessed-data/sales.csv')
+# Build the absolute path based on script location
+current_dir = Path(__file__).parent
+sales_path = current_dir.parent.parent / "data" / "preprocessed-data" / "sales.csv"
+
+# Load the data
+df = pd.read_csv(sales_path)
 
 # Convert date to datetime
 df['date'] = pd.to_datetime(df['date'])

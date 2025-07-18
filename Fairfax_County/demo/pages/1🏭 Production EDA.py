@@ -8,6 +8,8 @@ import geojson
 import random
 from folium.plugins import FeatureGroupSubGroup
 from streamlit_folium import folium_static
+from pathlib import Path
+import os
 import numpy as np
 
 # Set page config
@@ -32,11 +34,17 @@ meal_type = st.sidebar.radio(
 # Load data function with meal type selection
 @st.cache_data
 def load_data(meal_program):
+    # Get the absolute path to the current script
+    current_dir = Path(__file__).parent
+
     # Determine file path based on meal type
-    file_path = {
-        "Breakfast 🍳": "../data/preprocessed-data/data_breakfast_with_coordinates.csv",
-        "Lunch 🥪": "../data/preprocessed-data/data_lunch_with_coordinates.csv"
-    }[meal_program]
+    file_names = {
+        "Breakfast 🍳": "data_breakfast_with_coordinates.csv",
+        "Lunch 🥪": "data_lunch_with_coordinates.csv"
+    }
+
+    # Construct the full path
+    file_path = current_dir.parent.parent / "data" / "preprocessed-data" / file_names[meal_program]
 
     try:
         df = pd.read_csv(file_path, low_memory=False)
@@ -1543,8 +1551,11 @@ elif selected_viz == "Enhanced School Region Map":
     # st.header("🗺️ Enhanced School Region Map")
 
     # Load GeoJSON file
+    # Replace your GeoJSON loading code with:
     try:
-        with open('../data/preprocessed-data/School_Regions.geojson', 'r') as f:
+        current_dir = Path(__file__).parent
+        geojson_path = current_dir.parent.parent / "data" / "preprocessed-data" / "School_Regions.geojson"
+        with open(geojson_path, 'r') as f:
             geojson_data = geojson.load(f)
     except Exception as e:
         st.error(f"Failed to load GeoJSON file: {e}")
