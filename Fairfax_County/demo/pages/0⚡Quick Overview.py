@@ -10,6 +10,10 @@ st.set_page_config(
 st.title("⚡ Quick Overview")
 st.markdown("Quick overview of what we have completed so far in this project:")
 
+st.markdown("Schema of the data we are working with:")
+
+st.image("images/schema.png", caption="Data Schema")
+
 st.markdown("We began by preprocessing the data, converting Sales reports (PDFs) and Production reports (HTMLs) into structured CSV files. For extracting data from PDFs, we utilized the `PyPDF2` and `pdfplumber` Python libraries.")
 
 col1, col2 = st.columns(2)
@@ -73,11 +77,7 @@ st.subheader("📌 Cost per Student by Region")
 st.markdown("- **Insight:** Top 3 Fairfax County regions with the highest cost per student: Region 2, Region 3, Region 6.")
 
 st.subheader("📌 Geographic Distribution of Costs and Waste")
-st.markdown("- **Insight:** .")
-
 st.subheader("📌 Interactive School Map with Layers")
-st.markdown("- **Insight:** .")
-
 st.subheader("📌 Enhanced School Region Map")
 st.markdown("- **Insight:** .")
 

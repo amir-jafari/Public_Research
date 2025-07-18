@@ -17,11 +17,10 @@ st.subheader("EDA Ideas")
 
 st.subheader("🔮 Segment by High School, Middle School and Elementary School.")
 st.subheader("🔮 Connect Sales and Production records to identify discrepancies, trends, and revenue/cost optimization opportunities.")
-st.subheader("🔮 .")
+st.subheader("🔮 Connect to FCPS database system.")
 
 st.subheader("AI Modeling Ideas")
 
-st.subheader("🔮 .")
-st.subheader("🔮 .")
-st.subheader("🔮 .")
+st.subheader("🔮 Forecasting/Time Series Modeling.")
+st.subheader("🔮 Machine Learning Model: Classification.")
 
