@@ -63,7 +63,8 @@ st.markdown("- **Insight:** Top 3 breakfast menu items with the highest waste co
 st.markdown("- **Insight:** Top 3 lunch menu items with the highest waste cost: Fat Free Chocolate Milk, 1% White Milk, PB&J Power Pack.")
 
 st.subheader("📌 Cost Deviation by School")
-st.markdown("- **Insight:** .")
+st.markdown("- **Insight:** Breakfast tends to be underspent (actual cost is often less than planned), with Falls Church showing the most frequent instances of underspending.")
+st.markdown("- **Insight:** Lunch tends to stay closer to budget, with actual costs generally aligning with planned costs.")
 
 st.subheader("📌 Popularity vs. Waste by Menu Item")
 st.markdown("- **Insight:** Mini Maple Pancakes have high servings but low waste cost.")
@@ -79,36 +80,59 @@ st.markdown("- **Insight:** Top 3 Fairfax County regions with the highest cost p
 st.subheader("📌 Geographic Distribution of Costs and Waste")
 st.subheader("📌 Interactive School Map with Layers")
 st.subheader("📌 Enhanced School Region Map")
-st.markdown("- **Insight:** .")
+st.markdown("- **Insight:** Total waste costs appear to be more heavily concentrated in the Annandale and Falls Church regions.")
 
 st.markdown("---")
 
 st.header("📊 Sales EDA Insights")
 st.write("Some insights that we have gathered from the Sales dashboard:")
 
-st.subheader("📌 aa")
-st.markdown("- **Insight:** Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero.")
+st.subheader("📌 FRPA Sales Count by Day of Week")
+st.markdown("- **Insight:** On average, Free Meals (F) are served more frequently than Full-Priced Meals (P) and Reduced-Priced Meals (R). Adults (A) are served the least.")
+st.markdown("- **Insight:** Sales demand generally increases as the week progresses.")
+st.markdown("- **Insight:** For breakfast, a similar pattern is observed, though there is a noticeable decline on Fridays.")
+st.markdown("- **Insight:** For lunch, the increasing sales trend across the week is also evident.")
 
-st.subheader("📌 aa")
-st.markdown("- **Insight:** Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet.")
+st.subheader("📌 FRPA Sales Count by Month")
+st.markdown("- **Insight:** May recorded the highest sales demand, followed by March and then April.")
+st.markdown("- **Insight:** This pattern is consistent across both breakfast and lunch. Breakfast sees a higher number of Free Meals (F), while Lunch shows more Full-Priced Meals (P).")
 
-st.subheader("📌 aa")
-st.markdown("- **Insight:** Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta.")
+st.subheader("📌 Top 5 Schools with Highest Sales Volume")
+st.markdown(
+    "- **Insight:** The top 5 schools with the highest total meal sales are:\n"
+    "    1. Falls Church High – 116,685 meals\n"
+    "    2. Annandale High – 114,402 meals\n"
+    "    3. Lake Braddock Secondary – 98,055 meals\n"
+    "    4. Glasgow Middle – 84,302 meals\n"
+    "    5. Holmes Middle – 79,704 meals"
+)
 
-st.subheader("📌 aa")
-st.markdown("- **Insight:** Mauris massa. Vestibulum lacinia arcu eget nulla. Class aptent taciti sociosqu ad litora.")
+st.subheader("📌 Top 5 Schools with Lowest Sales Volume")
+st.markdown(
+    "- **Insight:** The 5 schools with the lowest total meal sales are:\n"
+    "    1. Vienna Elementary – 8,846 meals\n"
+    "    2. Franklin Sherman Elementary – 9,268 meals\n"
+    "    3. Chesterbrook Elementary – 10,418 meals\n"
+    "    4. Cherry Run Elementary – 11,481 meals\n"
+    "    5. Armstrong Elementary – 11,504 meals"
+)
 
-st.subheader("📌 aa")
-st.markdown("- **Insight:** Curabitur sodales ligula in libero. Sed dignissim lacinia nunc. Curabitur tortor.")
+st.subheader("📌 Top 5 Schools with Highest Sales Variation")
+st.markdown(
+    "- **Insight:** Schools with the highest variation in daily sales (standard deviation):\n"
+    "    1. Falls Church High – 256.5\n"
+    "    2. Lynbrook Elementary – 127.2\n"
+    "    3. Glasgow Middle – 121.0\n"
+    "    4. Annandale High – 120.5\n"
+    "    5. Lake Braddock Secondary – 119.4"
+)
 
-st.subheader("📌 aa")
-st.markdown("- **Insight:** Pellentesque nibh. Aenean quam. In scelerisque sem at dolor. Maecenas mattis.")
-
-st.subheader("📌 aa")
-st.markdown("- **Insight:** Sed convallis tristique sem. Proin ut ligula vel nunc egestas porttitor.")
-
-st.subheader("📌 aa")
-st.markdown("- **Insight:** Morbi lectus risus, iaculis vel, suscipit quis, luctus non, massa. Fusce ac turpis quis.")
-
-st.subheader("📌 aa")
-st.markdown("- **Insight:** Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum.")
+st.subheader("📌 Top 5 Schools with Lowest Sales Variation")
+st.markdown(
+    "- **Insight:** Schools with the most consistent daily sales (lowest standard deviation):\n"
+    "    1. Armstrong Elementary – 12.0\n"
+    "    2. Little Run Elementary – 13.1\n"
+    "    3. Franklin Sherman Elementary – 14.0\n"
+    "    4. Olde Creek Elementary – 15.1\n"
+    "    5. Belle View Elementary – 16.7"
+)

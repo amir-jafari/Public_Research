@@ -15,12 +15,13 @@ st.markdown("What's next? Well, we have a few ideas that we would like to explor
 
 st.subheader("EDA Ideas")
 
-st.subheader("🔮 Segment by High School, Middle School and Elementary School.")
-st.subheader("🔮 Connect Sales and Production records to identify discrepancies, trends, and revenue/cost optimization opportunities.")
-st.subheader("🔮 Connect to FCPS database system.")
+st.markdown("🔮 Segment by High School, Middle School and Elementary School.")
+st.markdown("🔮 Connect Sales and Production records to identify discrepancies, trends, and revenue/cost optimization opportunities.")
+st.markdown("🔮 Connect to FCPS database system.")
 
 st.subheader("AI Modeling Ideas")
 
-st.subheader("🔮 Forecasting/Time Series Modeling.")
-st.subheader("🔮 Machine Learning Model: Classification.")
+st.markdown("🔮 Forecasting/Time Series Modeling.")
+st.markdown("🔮 Machine Learning Model: Classification.")
+
 
