@@ -1,4 +1,11 @@
 import streamlit as st
+from pathlib import Path
+
+
+def img(filename):
+    # Go up 1 level: pages -> demo, then into images/
+    return str(Path(__file__).parent.parent / "images" / filename)
+
 
 # Set page config
 st.set_page_config(
@@ -12,29 +19,29 @@ st.markdown("Quick overview of what we have completed so far in this project:")
 
 st.markdown("Schema of the data we are working with:")
 
-st.image("images/schema.png", caption="Data Schema")
+st.image(img("schema.png"), caption="Data Schema")
 
 st.markdown("We began by preprocessing the data, converting Sales reports (PDFs) and Production reports (HTMLs) into structured CSV files. For extracting data from PDFs, we utilized the `PyPDF2` and `pdfplumber` Python libraries.")
 
 col1, col2 = st.columns(2)
 with col1:
-    st.image("images/example-pdf-sales.png", caption="Sales PDF Example")
+    st.image(img("example-pdf-sales.png"), caption="Sales PDF Example")
 with col2:
-    st.image("images/example-csv-sales.png", caption="Preprocessed Sales CSV Example")
+    st.image(img("example-csv-sales.png"), caption="Preprocessed Sales CSV Example")
 
 col3, col4 = st.columns(2)
 with col3:
-    st.image("images/example-html-prod.png", caption="Production HTML Example")
+    st.image(img("example-html-prod.png"), caption="Production HTML Example")
 with col4:
-    st.image("images/example-csv-prod.png", caption="Preprocessed Production CSV Example")
+    st.image(img("example-csv-prod.png"), caption="Preprocessed Production CSV Example")
 
 st.markdown("Due to the limited time frame, we prioritized the development of an [Exploratory Data Analysis (EDA)](https://en.wikipedia.org/wiki/Exploratory_data_analysis) dashboard to explore and visualize key trends in the data. The dashboard was built using `streamlit` and `plotly` Python libraries.")
 
 col5, col6 = st.columns(2)
 with col5:
-    st.image("images/sales-eda.png", caption="EDA Sales Dashboard")
+    st.image(img("sales-eda.png"), caption="EDA Sales Dashboard")
 with col6:
-    st.image("images/prod-eda.png", caption="EDA Production Dashboard")
+    st.image(img("prod-eda.png"), caption="EDA Production Dashboard")
 
 st.markdown("---")
 

@@ -141,6 +141,7 @@ date_range = st.sidebar.date_input(
 # Main content area
 st.header(selected_viz)  # Dynamic title based on selection
 
+
 # Apply filters to data
 def apply_filters(df, school, date_range, items):
     filtered = df.copy()
@@ -161,7 +162,15 @@ def apply_filters(df, school, date_range, items):
     return filtered
 
 
-filtered_df = apply_filters(df, selected_school, date_range, menu_items)
+def safe_filtered_df(df, school, date_range, items):
+    filtered = apply_filters(df, school, date_range, items)
+    if filtered.empty:
+        st.warning("No data found for the selected menu items and school. Please try choosing more items.")
+        st.stop()
+    return filtered
+
+
+filtered_df = safe_filtered_df(df, selected_school, date_range, menu_items)
 
 # ---------------------------------------------------------------------------------------------------------
 
@@ -188,7 +197,8 @@ if selected_viz == "Total Cost by School":
         summary_df = apply_filters(df, selected_school, date_range, menu_items)
         summary_df["Meal"] = meal_type.split()[0]  # 'Breakfast' or 'Lunch'
 
-    school_summary = summary_df.groupby(['School Name', 'Meal'], observed=True)['Production_Cost_Total'].sum().reset_index()
+    school_summary = summary_df.groupby(['School Name', 'Meal'], observed=True)[
+        'Production_Cost_Total'].sum().reset_index()
 
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -234,7 +244,8 @@ if selected_viz == "Total Cost by School":
     )
 
     # Filter by range
-    display_df = school_summary.groupby(['School Name', 'Meal'], observed=True)['Production_Cost_Total'].sum().reset_index()
+    display_df = school_summary.groupby(['School Name', 'Meal'], observed=True)[
+        'Production_Cost_Total'].sum().reset_index()
 
     total_costs = display_df.groupby('School Name')['Production_Cost_Total'].sum()
     top_schools = total_costs.sort_values(ascending=False)
@@ -416,7 +427,7 @@ elif selected_viz == "Cost Distribution: Schools and Menu Items":
         viz_df = viz_df[
             (viz_df['Date'] >= pd.to_datetime(start_date)) &
             (viz_df['Date'] <= pd.to_datetime(end_date))
-        ]
+            ]
 
     if 'All Schools' not in selected_schools:
         if 'Top 10 Schools' in selected_schools:
@@ -430,7 +441,7 @@ elif selected_viz == "Cost Distribution: Schools and Menu Items":
     viz_df = viz_df[
         (viz_df['Production_Cost_Total'] >= cost_per_serving[0]) &
         (viz_df['Production_Cost_Total'] <= cost_per_serving[1])
-    ]
+        ]
 
     # 4. CREATE VISUALIZATION
     if not viz_df.empty:
@@ -461,8 +472,8 @@ elif selected_viz == "Cost Distribution: Schools and Menu Items":
             color_continuous_scale='Viridis',
             hover_data=['servings'],
             title=f"Cost Distribution by School and Menu Item<br>" +
-                 f"<sup>Cost/Serving: ${cost_per_serving[0]:.2f}-${cost_per_serving[1]:.2f} | " +
-                 f"{len(selected_schools)} {'school' if len(selected_schools)==1 else 'schools'} selected</sup>"
+                  f"<sup>Cost/Serving: ${cost_per_serving[0]:.2f}-${cost_per_serving[1]:.2f} | " +
+                  f"{len(selected_schools)} {'school' if len(selected_schools) == 1 else 'schools'} selected</sup>"
         )
 
         fig.update_layout(
@@ -510,7 +521,7 @@ elif selected_viz == "Cost Distribution: Schools and Menu Items":
         """)
 
 # ---------------------------------------------------------------------------------------------------------
-    
+
 elif selected_viz == "Top Schools by Food Waste Cost":
     # st.header("\U0001F5D1\ufe0f Top Schools by Food Waste Cost")
 
@@ -531,18 +542,23 @@ elif selected_viz == "Top Schools by Food Waste Cost":
         df_breakfast["Meal"] = "Breakfast"
         df_lunch["Meal"] = "Lunch"
         combined_df = pd.concat([df_breakfast, df_lunch], ignore_index=True)
-        filtered_df = apply_filters(combined_df, selected_school, date_range, menu_items)
+        filtered_df = safe_filtered_df(combined_df, selected_school, date_range, menu_items)
     else:
-        filtered_df = apply_filters(df, selected_school, date_range, menu_items)
+        filtered_df = safe_filtered_df(df, selected_school, date_range, menu_items)
         filtered_df["Meal"] = meal_type.split()[0]  # 'Breakfast' or 'Lunch'
+
+    # Precompute waste sum by school
+    waste_sum = filtered_df.groupby(['School Name'])['Total_Waste_Cost'].sum()
+
+    # Validate waste_sum BEFORE calling slider
+    if waste_sum.empty or waste_sum.max() is None or pd.isna(waste_sum.max()) or waste_sum.max() == 0:
+        st.warning("No valid waste cost data found for the selected menu items or school. Please choose different of more items.")
+        st.stop()
+
+    waste_max = float(waste_sum.max())
 
     with st.sidebar:
         st.subheader("Display Options")
-
-        waste_min = float(filtered_df['Total_Waste_Cost'].min())
-        waste_max = float(
-            filtered_df.groupby(['School Name'])['Total_Waste_Cost'].sum().max()
-        )
 
         waste_range = st.slider(
             "Filter by Total Waste Cost ($)",
@@ -571,7 +587,7 @@ elif selected_viz == "Top Schools by Food Waste Cost":
     waste_by_school = waste_by_school[
         (waste_by_school['Total_Waste_Cost'] >= waste_range[0]) &
         (waste_by_school['Total_Waste_Cost'] <= waste_range[1])
-    ]
+        ]
 
     # Determine top N schools overall (summing across meals)
     top_schools = (
@@ -647,8 +663,6 @@ elif selected_viz == "Top Schools by Food Waste Cost":
 # ---------------------------------------------------------------------------------------------------------
 
 elif selected_viz == "Top Wasted Menu Items":
-    # st.header("🍽️ Top Wasted Menu Items")
-
     # Sidebar toggle for comparison
     compare_option = st.sidebar.radio(
         "Meal View",
@@ -659,103 +673,113 @@ elif selected_viz == "Top Wasted Menu Items":
     )
     compare_meals = (compare_option == "Compare Breakfast vs. Lunch")
 
-    # Load and filter data
-    if compare_meals:
-        df_breakfast = load_data("Breakfast 🍳")
-        df_lunch = load_data("Lunch 🥪")
-        df_breakfast["Meal"] = "Breakfast"
-        df_lunch["Meal"] = "Lunch"
-        combined_df = pd.concat([df_breakfast, df_lunch], ignore_index=True)
-        filtered_df = apply_filters(combined_df, selected_school, date_range, menu_items)
-    else:
-        filtered_df = apply_filters(df, selected_school, date_range, menu_items)
-        filtered_df["Meal"] = meal_type.split()[0]  # 'Breakfast' or 'Lunch'
+    # Load and filter data with safeguards
+    try:
+        if compare_meals:
+            df_breakfast = load_data("Breakfast 🍳")
+            df_lunch = load_data("Lunch 🥪")
+            df_breakfast["Meal"] = "Breakfast"
+            df_lunch["Meal"] = "Lunch"
+            combined_df = pd.concat([df_breakfast, df_lunch], ignore_index=True)
+            filtered_df = apply_filters(combined_df, selected_school, date_range, menu_items)
+        else:
+            filtered_df = apply_filters(df, selected_school, date_range, menu_items)
+            filtered_df["Meal"] = meal_type.split()[0]  # 'Breakfast' or 'Lunch'
 
-    if filtered_df.empty:
-        st.warning("No records found for the selected filters.")
+        # Primary data validation
+        if filtered_df.empty:
+            st.warning("No records found for the selected filters.")
+            st.stop()
+
+        # First create grouped data safely
+        grouped = filtered_df.groupby(['Name', 'Meal'], observed=True)['Total_Waste_Cost'].sum().reset_index()
+
+        if grouped.empty:
+            st.warning("No waste data available after grouping.")
+            st.stop()
+        waste_sum = grouped.groupby('Name')['Total_Waste_Cost'].sum()
+
+        if waste_sum.empty or waste_sum.max() is None or pd.isna(waste_sum.max()) or waste_sum.max() == 0:
+            st.warning(
+                "No valid waste cost data found for the selected menu items or school. Please choose different of more items.")
+            st.stop()
+
+        # Now calculate max values safely
+        item_waste_max = float(grouped['Total_Waste_Cost'].max())
+        available_items = grouped['Name'].nunique()
+
+    except Exception as e:
+        st.error(f"Data processing error: {str(e)}")
         st.stop()
 
     with st.sidebar:
         st.subheader("Display Options")
 
-        # Max possible items BEFORE grouping
-        max_items = filtered_df['Name'].nunique()
+        try:
+            item_waste_range = st.slider(
+                "Filter by Total Waste Cost ($)",
+                min_value=0.0,
+                max_value=item_waste_max,
+                value=(0.0, item_waste_max),
+                step=50.0,
+                key="item_waste_cost_range"
+            )
 
-        item_waste_max = float(
-            filtered_df.groupby('Name')['Total_Waste_Cost'].sum().max()
+            num_items = st.slider(
+                "Number of menu items to display",
+                min_value=1,
+                max_value=available_items,
+                value=min(10, available_items),
+                step=1,
+                key="waste_item_count_slider"
+            )
+        except Exception as e:
+            st.error(f"Filter setup error: {str(e)}")
+            st.stop()
+
+    # Apply filters to grouped data
+    try:
+        filtered_grouped = grouped[
+            (grouped['Total_Waste_Cost'] >= item_waste_range[0]) &
+            (grouped['Total_Waste_Cost'] <= item_waste_range[1])
+            ]
+
+        if filtered_grouped.empty:
+            st.warning("No items match the selected waste cost range.")
+            st.stop()
+
+        # Get top items
+        top_items = (
+            filtered_grouped.groupby('Name')['Total_Waste_Cost']
+            .sum()
+            .sort_values(ascending=False)
+            .head(num_items if num_items != "All" else None)
+            .index
         )
-        item_waste_range = st.slider(
-            "Filter by Total Waste Cost ($)",
-            min_value=0.0,
-            max_value=item_waste_max,
-            value=(0.0, item_waste_max),
-            step=50.0,
-            key="item_waste_cost_range"
-        )
 
-        num_items = st.slider(
-            "Number of menu items to display",
-            min_value=1,
-            max_value=max_items,
-            value=min(10, max_items),
-            step=1,
-            key="waste_item_count_slider"
-        )
+        display_data = filtered_grouped[filtered_grouped['Name'].isin(top_items)]
 
-    # Now safe to use filtered_df and define grouped
-    # 1. Apply global filters
-    filtered_df = apply_filters(df, selected_school, date_range, menu_items)
+        if display_data.empty:
+            st.warning("No items to display after filtering.")
+            st.stop()
 
-    # 2. Inject 'Meal' column for grouping
-    filtered_df["Meal"] = meal_type.split()[0]  # 'Breakfast' or 'Lunch'
-
-    # 3. Group once
-    grouped = filtered_df.groupby(['Name', 'Meal'], observed=True)['Total_Waste_Cost'].sum().reset_index()
-
-    # 4. Apply waste cost range from sidebar
-    grouped = grouped[
-        (grouped['Total_Waste_Cost'] >= item_waste_range[0]) &
-        (grouped['Total_Waste_Cost'] <= item_waste_range[1])
-        ]
-
-    # 5. Determine top N items
-    top_items = (
-        grouped.groupby('Name')['Total_Waste_Cost']
-        .sum()
-        .sort_values(ascending=False)
-        .head(None if num_items == "All" else int(num_items))
-        .index
-    )
-
-    # 6. Final subset
-    grouped = grouped[grouped['Name'].isin(top_items)]
-
-    # Determine top items overall
-    top_items = (
-        grouped.groupby('Name')['Total_Waste_Cost']
-        .sum()
-        .sort_values(ascending=False)
-        .head(None if num_items == "All" else int(num_items))
-        .index
-    )
-    grouped = grouped[grouped['Name'].isin(top_items)]
-
-    if grouped.empty:
-        st.warning("No menu items match the selected criteria.")
+    except Exception as e:
+        st.error(f"Data filtering error: {str(e)}")
         st.stop()
 
+    # Visualization code using display_data
     # Summary Metrics
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Displayed Items", grouped['Name'].nunique())
+        st.metric("Displayed Items", display_data['Name'].nunique())
     with col2:
-        st.metric("Total Waste Cost (Shown)", f"${grouped['Total_Waste_Cost'].sum():,.2f}")
+        st.metric("Total Waste Cost (Shown)", f"${display_data['Total_Waste_Cost'].sum():,.2f}")
     with col3:
-        st.metric("Meals Compared", grouped['Meal'].nunique())
+        st.metric("Meals Compared", display_data['Meal'].nunique())
 
     # Bar chart
     fig = px.bar(
-        grouped,
+        display_data,
         x='Name',
         y='Total_Waste_Cost',
         color='Meal',
@@ -801,7 +825,7 @@ elif selected_viz == "Cost Deviation by School":
     # st.header("💰 Cost Deviation by School")
 
     # Apply global filters first
-    filtered_df = apply_filters(df, selected_school, date_range, menu_items)
+    filtered_df = safe_filtered_df(df, selected_school, date_range, menu_items)
 
     if filtered_df.empty:
         st.warning("No records found for the selected school, menu items, or date range.")
@@ -838,7 +862,7 @@ elif selected_viz == "Cost Deviation by School":
     valid_schools = school_deviation[
         (school_deviation >= deviation_range[0]) &
         (school_deviation <= deviation_range[1])
-    ]
+        ]
 
     if valid_schools.empty:
         st.warning("No schools fall within the selected deviation range.")
@@ -920,98 +944,122 @@ elif selected_viz == "Cost Deviation by School":
 # ---------------------------------------------------------------------------------------------------------
 
 elif selected_viz == "Popularity vs. Waste by Menu Item":
-    # st.header("📊 Popularity vs. Waste by Menu Item")
+    # Apply global filters with safeguards
+    try:
+        filtered_df = apply_filters(df, selected_school, date_range, menu_items)
 
-    # Apply global filters
-    filtered_df = apply_filters(df, selected_school, date_range, menu_items)
+        if filtered_df.empty:
+            st.warning("No records found for the selected filters.")
+            st.stop()
 
-    if filtered_df.empty:
-        st.warning("No records found for the selected filters.")
+        # Aggregate stats by menu item
+        item_stats = filtered_df.groupby('Name').agg({
+            'Served_Total': 'sum',
+            'Total_Waste_Cost': 'sum'
+        }).reset_index()
+
+        # Add the exact validation check you requested
+        waste_sum = item_stats['Total_Waste_Cost']
+        if waste_sum.empty or waste_sum.max() is None or pd.isna(waste_sum.max()) or waste_sum.max() == 0:
+            st.warning(
+                "No valid waste cost data found for the selected menu items or school. Please choose different or more items.")
+            st.stop()
+
+    except Exception as e:
+        st.error(f"Data processing error: {str(e)}")
         st.stop()
 
-    # Aggregate stats by menu item
-    item_stats = filtered_df.groupby('Name').agg({
-        'Served_Total': 'sum',
-        'Total_Waste_Cost': 'sum'
-    }).reset_index()
-
-    # Sidebar filters
+    # Sidebar filters with additional safeguards
     with st.sidebar:
         st.subheader("Item Filters")
 
-        max_served = int(item_stats['Served_Total'].max())
-        max_waste = float(item_stats['Total_Waste_Cost'].max())
+        try:
+            max_served = int(item_stats['Served_Total'].max())
+            max_waste = float(item_stats['Total_Waste_Cost'].max())
 
-        served_range = st.slider(
-            "Servings Range",
-            min_value=0,
-            max_value=max_served,
-            value=(0, max_served),
-            step=10,
-            key="served_range"
-        )
+            served_range = st.slider(
+                "Servings Range",
+                min_value=0,
+                max_value=max_served,
+                value=(0, max_served),
+                step=max(1, max_served // 100),  # Dynamic step size
+                key="served_range"
+            )
 
-        waste_range = st.slider(
-            "Waste Cost Range ($)",
-            min_value=0.0,
-            max_value=round(max_waste + 1, 2),
-            value=(0.0, round(max_waste + 1, 2)),
-            step=10.0,
-            key="waste_range"
-        )
+            waste_range = st.slider(
+                "Waste Cost Range ($)",
+                min_value=0.0,
+                max_value=max(0.1, max_waste),  # Ensure at least 0.1 range
+                value=(0.0, max(0.1, max_waste)),
+                step=max(0.1, max_waste / 100),  # Dynamic step size
+                key="waste_range"
+            )
 
-        item_limit = st.selectbox(
-            "Number of items to display",
-            options=[10, 20, 30, 50, "All"],
-            index=0,
-            key="item_limit"
-        )
+            item_limit = st.selectbox(
+                "Number of items to display",
+                options=[10, 20, 30, 50, "All"],
+                index=0,
+                key="item_limit"
+            )
+        except Exception as e:
+            st.error(f"Filter setup error: {str(e)}")
+            st.stop()
 
-    # Filter data
-    item_stats = item_stats[
-        (item_stats['Served_Total'] >= served_range[0]) &
-        (item_stats['Served_Total'] <= served_range[1]) &
-        (item_stats['Total_Waste_Cost'] >= waste_range[0]) &
-        (item_stats['Total_Waste_Cost'] <= waste_range[1])
-    ]
+    # Filter data with validation
+    try:
+        filtered_items = item_stats[
+            (item_stats['Served_Total'] >= served_range[0]) &
+            (item_stats['Served_Total'] <= served_range[1]) &
+            (item_stats['Total_Waste_Cost'] >= waste_range[0]) &
+            (item_stats['Total_Waste_Cost'] <= waste_range[1])
+            ]
 
-    if item_stats.empty:
-        st.warning("No menu items match the selected ranges.")
+        if filtered_items.empty:
+            st.warning("No menu items match the selected ranges.")
+            st.stop()
+
+        # Limit items if needed
+        if item_limit != "All":
+            filtered_items = filtered_items.nlargest(int(item_limit), 'Total_Waste_Cost')
+
+    except Exception as e:
+        st.error(f"Data filtering error: {str(e)}")
         st.stop()
-
-    # Limit items if needed
-    if item_limit != "All":
-        item_stats = item_stats.sort_values('Total_Waste_Cost', ascending=False).head(int(item_limit))
 
     # Summary stats
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Items Displayed", item_stats['Name'].nunique())
+        st.metric("Items Displayed", filtered_items['Name'].nunique())
     with col2:
-        st.metric("Total Servings", f"{item_stats['Served_Total'].sum():,}")
+        st.metric("Total Servings", f"{filtered_items['Served_Total'].sum():,}")
     with col3:
-        st.metric("Total Waste Cost", f"${item_stats['Total_Waste_Cost'].sum():,.2f}")
+        st.metric("Total Waste Cost", f"${filtered_items['Total_Waste_Cost'].sum():,.2f}")
 
-    # Plot
-    fig = px.scatter(
-        item_stats,
-        x='Served_Total',
-        y='Total_Waste_Cost',
-        size='Total_Waste_Cost',
-        hover_name='Name',
-        title='Popularity vs. Waste by Menu Item',
-        color='Total_Waste_Cost',
-        color_continuous_scale='Viridis'
-    )
-    fig.update_layout(
-        height=600,
-        width=1200,
-        xaxis_title="Total Servings",
-        yaxis_title="Total Waste Cost ($)",
-        coloraxis_showscale=False
-    )
+    # Plot with error handling
+    try:
+        fig = px.scatter(
+            filtered_items,
+            x='Served_Total',
+            y='Total_Waste_Cost',
+            size='Total_Waste_Cost',
+            hover_name='Name',
+            title='Popularity vs. Waste by Menu Item',
+            color='Total_Waste_Cost',
+            color_continuous_scale='Viridis'
+        )
+        fig.update_layout(
+            height=600,
+            width=1200,
+            xaxis_title="Total Servings",
+            yaxis_title="Total Waste Cost ($)",
+            coloraxis_showscale=False
+        )
 
-    st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True)
+
+    except Exception as e:
+        st.error(f"Visualization error: {str(e)}")
+        st.stop()
 
     with st.expander("ℹ️ About this visualization"):
         st.markdown("""
@@ -1058,9 +1106,9 @@ elif selected_viz == "Average Food Waste by Day of Week":
         df_breakfast['Meal'] = 'Breakfast'
         df_lunch['Meal'] = 'Lunch'
         combined_df = pd.concat([df_breakfast, df_lunch], ignore_index=True)
-        filtered_df = apply_filters(combined_df, selected_school, date_range, menu_items)
+        filtered_df = safe_filtered_df(combined_df, selected_school, date_range, menu_items)
     else:
-        filtered_df = apply_filters(df, selected_school, date_range, menu_items)
+        filtered_df = safe_filtered_df(df, selected_school, date_range, menu_items)
         filtered_df['Meal'] = meal_type.split()[0]  # 'Breakfast' or 'Lunch'
 
     if filtered_df.empty:
@@ -1148,8 +1196,6 @@ elif selected_viz == "Average Food Waste by Day of Week":
 # ---------------------------------------------------------------------------------------------------------
 
 elif selected_viz == "Cost per Student by Region":
-    # st.header("🏫 Cost per Student by Region")
-
     # Sidebar toggle for comparison
     compare_option = st.sidebar.radio(
         "Meal View",
@@ -1159,76 +1205,112 @@ elif selected_viz == "Cost per Student by Region":
     )
     compare_meals = (compare_option == "Compare Breakfast vs. Lunch")
 
-    # Load and filter data
-    if compare_meals:
-        df_breakfast = load_data("Breakfast 🍳")
-        df_lunch = load_data("Lunch 🥪")
-        df_breakfast["Meal"] = "Breakfast"
-        df_lunch["Meal"] = "Lunch"
-        combined_df = pd.concat([df_breakfast, df_lunch], ignore_index=True)
-        filtered_df = apply_filters(combined_df, selected_school, date_range, menu_items)
-    else:
-        filtered_df = apply_filters(df, selected_school, date_range, menu_items)
-        filtered_df["Meal"] = meal_type.split()[0]  # 'Breakfast' or 'Lunch'
+    # Load and filter data with safeguards
+    try:
+        if compare_meals:
+            df_breakfast = load_data("Breakfast 🍳")
+            df_lunch = load_data("Lunch 🥪")
+            df_breakfast["Meal"] = "Breakfast"
+            df_lunch["Meal"] = "Lunch"
+            combined_df = pd.concat([df_breakfast, df_lunch], ignore_index=True)
+            filtered_df = apply_filters(combined_df, selected_school, date_range, menu_items)
+        else:
+            filtered_df = apply_filters(df, selected_school, date_range, menu_items)
+            filtered_df["Meal"] = meal_type.split()[0]  # 'Breakfast' or 'Lunch'
 
-    if "FCPS Region" not in filtered_df.columns:
-        st.warning("⚠️ 'FCPS Region' column not found in data.")
+        # Primary data validation
+        if filtered_df.empty:
+            st.warning("No records found for the selected filters.")
+            st.stop()
+
+        if "FCPS Region" not in filtered_df.columns:
+            st.warning("⚠️ 'FCPS Region' column not found in data.")
+            st.stop()
+
+        # Calculate cost per student with zero-division protection
+        region_cost = (
+            filtered_df.groupby(["FCPS Region", "Meal"])
+            .agg({"Production_Cost_Total": "sum", "Served_Total": "sum"})
+            .reset_index()
+        )
+        region_cost["Cost_Per_Student"] = np.where(
+            region_cost["Served_Total"] > 0,
+            region_cost["Production_Cost_Total"] / region_cost["Served_Total"],
+            0  # Handle zero servings case
+        )
+
+        # Add validation check for meaningful data
+        if (region_cost["Cost_Per_Student"] == 0).all():
+            st.warning("No valid data found for the selected menu items. Please select different or more items.")
+            st.stop()
+
+    except Exception as e:
+        st.error(f"Data processing error: {str(e)}")
         st.stop()
 
-    if filtered_df.empty:
-        st.warning("No records found for the selected filters.")
+    # Summary metrics with additional validation
+    try:
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric("Regions Displayed", region_cost['FCPS Region'].nunique())
+        with col2:
+            avg_cost = region_cost['Cost_Per_Student'].replace([np.inf, -np.inf], np.nan).mean()
+            st.metric("Avg Cost/Student", f"${avg_cost:,.2f}")
+
+        # Find min/max with error handling
+        valid_costs = region_cost.replace([np.inf, -np.inf], np.nan).dropna(subset=['Cost_Per_Student'])
+        if not valid_costs.empty:
+            max_row = valid_costs.loc[valid_costs['Cost_Per_Student'].idxmax()]
+            min_row = valid_costs.loc[valid_costs['Cost_Per_Student'].idxmin()]
+
+            col3, col4 = st.columns(2)
+            with col3:
+                st.metric("Highest Region",
+                          f"{max_row['FCPS Region']} ({max_row['Meal']})",
+                          delta=f"${max_row['Cost_Per_Student']:,.2f}")
+            with col4:
+                st.metric("Lowest Region",
+                          f"{min_row['FCPS Region']} ({min_row['Meal']})",
+                          delta=f"${min_row['Cost_Per_Student']:,.2f}")
+        else:
+            st.warning("No valid cost-per-student values to display.")
+            st.stop()
+
+    except Exception as e:
+        st.error(f"Metric calculation error: {str(e)}")
         st.stop()
 
-    # Group and calculate cost per student
-    region_cost = (
-        filtered_df.groupby(["FCPS Region", "Meal"])
-        .agg({"Production_Cost_Total": "sum", "Served_Total": "sum"})
-        .reset_index()
-    )
-    region_cost["Cost_Per_Student"] = region_cost["Production_Cost_Total"] / region_cost["Served_Total"]
+    # Plot with error handling
+    try:
+        fig = px.bar(
+            region_cost,
+            x="FCPS Region",
+            y="Cost_Per_Student",
+            color="Meal",
+            barmode="group",
+            labels={
+                "Cost_Per_Student": "Cost per Student ($)",
+                "FCPS Region": "Region",
+                "Meal": "Meal"
+            },
+            color_discrete_map={"Breakfast": "#1f77b4", "Lunch": "#17becf"},
+            title="Cost per Student by Region"
+        )
 
-    # Summary metrics
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric("Regions Displayed", region_cost['FCPS Region'].nunique())
-    with col2:
-        avg_cost = region_cost['Cost_Per_Student'].mean()
-        st.metric("Avg Cost/Student", f"${avg_cost:,.2f}")
+        fig.update_layout(
+            height=600,
+            width=1100,
+            xaxis_title="Region",
+            yaxis_title="Cost per Student ($)",
+            xaxis_tickangle=0,
+            coloraxis_showscale=False
+        )
 
-    col3, col4 = st.columns(2)
-    max_row = region_cost.loc[region_cost['Cost_Per_Student'].idxmax()]
-    min_row = region_cost.loc[region_cost['Cost_Per_Student'].idxmin()]
-    with col3:
-        st.metric("Highest Region", f"{max_row['FCPS Region']} ({max_row['Meal']})", delta=f"${max_row['Cost_Per_Student']:,.2f}")
-    with col4:
-        st.metric("Lowest Region", f"{min_row['FCPS Region']} ({min_row['Meal']})", delta=f"${min_row['Cost_Per_Student']:,.2f}")
+        st.plotly_chart(fig, use_container_width=True)
 
-    # Plot
-    fig = px.bar(
-        region_cost,
-        x="FCPS Region",
-        y="Cost_Per_Student",
-        color="Meal",
-        barmode="group",  # You can change to 'stack' here if needed
-        labels={
-            "Cost_Per_Student": "Cost per Student ($)",
-            "FCPS Region": "Region",
-            "Meal": "Meal"
-        },
-        color_discrete_map={"Breakfast": "#1f77b4", "Lunch": "#17becf"},
-        title="Cost per Student by Region"
-    )
-
-    fig.update_layout(
-        height=600,
-        width=1100,
-        xaxis_title="Region",
-        yaxis_title="Cost per Student ($)",
-        xaxis_tickangle=0,
-        coloraxis_showscale=False
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
+    except Exception as e:
+        st.error(f"Visualization error: {str(e)}")
+        st.stop()
 
     with st.expander("ℹ️ About this visualization"):
         st.markdown("""
@@ -1248,104 +1330,158 @@ elif selected_viz == "Cost per Student by Region":
 # ---------------------------------------------------------------------------------------------------------
 
 elif selected_viz == "Geographic Distribution of Costs and Waste":
-    # st.header("🗺️ Geographic Distribution of Costs and Waste")
+    try:
+        # Apply global filters with validation
+        filtered_df = apply_filters(df, selected_school, date_range, menu_items)
 
-    # Apply global filters
-    filtered_df = apply_filters(df, selected_school, date_range, menu_items)
+        # Check for required columns
+        required_columns = {'latitude', 'longitude', 'School Name', 'Production_Cost_Total', 'Total_Waste_Cost'}
+        missing_cols = required_columns - set(filtered_df.columns)
+        if missing_cols:
+            st.warning(f"Missing required columns: {', '.join(missing_cols)}")
+            st.stop()
 
-    required_columns = {'latitude', 'longitude', 'School Name', 'Production_Cost_Total', 'Total_Waste_Cost'}
-    if not required_columns.issubset(filtered_df.columns):
-        st.warning("Required columns (latitude, longitude, costs) not found in data.")
+        if filtered_df.empty:
+            st.warning("No records found for the selected filters.")
+            st.stop()
+
+        # Validate coordinate data
+        if filtered_df['latitude'].isna().any() or filtered_df['longitude'].isna().any():
+            st.warning("Some locations are missing coordinates. These records will be excluded.")
+            filtered_df = filtered_df.dropna(subset=['latitude', 'longitude'])
+            if filtered_df.empty:
+                st.warning("No records with valid coordinates remain.")
+                st.stop()
+
+        # Group and aggregate with validation
+        school_geo = filtered_df.groupby(['School Name', 'latitude', 'longitude']).agg({
+            'Production_Cost_Total': 'sum',
+            'Total_Waste_Cost': 'sum'
+        }).reset_index()
+
+        # Add your specific validation check
+        if school_geo['Total_Waste_Cost'].sum() == 0 or school_geo['Production_Cost_Total'].sum() == 0:
+            st.warning("No valid cost or waste data found for the selected filters. Please adjust your selections.")
+            st.stop()
+
+    except Exception as e:
+        st.error(f"Data processing error: {str(e)}")
         st.stop()
 
-    if filtered_df.empty:
-        st.warning("No records found for the selected filters.")
+    # Slider configuration with safeguards
+    try:
+        if selected_school != "All Schools":
+            # Single school mode - no sliders needed
+            cost_range = (
+                int(school_geo['Production_Cost_Total'].min()),
+                int(school_geo['Production_Cost_Total'].max())
+            )
+            waste_range = (
+                int(school_geo['Total_Waste_Cost'].min()),
+                int(school_geo['Total_Waste_Cost'].max())
+            )
+        else:
+            # Multi-school mode with sliders
+            with st.sidebar:
+                st.subheader("Map Filters")
+
+                # Calculate safe ranges
+                cost_min, cost_max = 0, max(1, int(school_geo['Production_Cost_Total'].max()))
+                waste_min, waste_max = 0, max(1, int(school_geo['Total_Waste_Cost'].max()))
+
+                cost_range = st.slider(
+                    "Production Cost Range ($)",
+                    min_value=cost_min,
+                    max_value=cost_max,
+                    value=(cost_min, cost_max),
+                    step=max(100, cost_max // 100),
+                    key="geo_cost_range"
+                )
+
+                waste_range = st.slider(
+                    "Waste Cost Range ($)",
+                    min_value=waste_min,
+                    max_value=waste_max,
+                    value=(waste_min, waste_max),
+                    step=max(50, waste_max // 100),
+                    key="geo_waste_range"
+                )
+
+            # Apply filters
+            school_geo = school_geo[
+                (school_geo['Production_Cost_Total'] >= cost_range[0]) &
+                (school_geo['Production_Cost_Total'] <= cost_range[1]) &
+                (school_geo['Total_Waste_Cost'] >= waste_range[0]) &
+                (school_geo['Total_Waste_Cost'] <= waste_range[1])
+                ]
+
+            if school_geo.empty:
+                st.warning("No schools match the selected cost/waste ranges.")
+                st.stop()
+
+    except Exception as e:
+        st.error(f"Filter configuration error: {str(e)}")
         st.stop()
 
-    # Group and aggregate by school and location
-    school_geo = filtered_df.groupby(['School Name', 'latitude', 'longitude']).agg({
-        'Production_Cost_Total': 'sum',
-        'Total_Waste_Cost': 'sum'
-    }).reset_index()
+    # Summary metrics with validation
+    try:
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Schools Displayed", school_geo['School Name'].nunique())
+        with col2:
+            total_cost = school_geo['Production_Cost_Total'].sum()
+            st.metric("Total Cost", f"${total_cost:,.2f}")
+        with col3:
+            total_waste = school_geo['Total_Waste_Cost'].sum()
+            st.metric("Total Waste", f"${total_waste:,.2f}")
 
-    # Add sliders for filtering
-    # If only one school is selected, skip sliders entirely
-    if selected_school != "All Schools":
-        school_geo = school_geo[school_geo['School Name'] == selected_school]
-        cost_range = (
-            int(school_geo['Production_Cost_Total'].min()),
-            int(school_geo['Production_Cost_Total'].max())
+        # Final validation before plotting
+        if total_cost == 0 and total_waste == 0:
+            st.warning("No valid cost or waste data to display after filtering.")
+            st.stop()
+
+    except Exception as e:
+        st.error(f"Metric calculation error: {str(e)}")
+        st.stop()
+
+    # Map visualization with error handling
+    try:
+        fig = px.scatter_map(
+            school_geo,
+            lat='latitude',
+            lon='longitude',
+            size='Production_Cost_Total',
+            color='Total_Waste_Cost',
+            hover_name='School Name',
+            hover_data={
+                'Production_Cost_Total': ':.2f',
+                'Total_Waste_Cost': ':.2f',
+                'latitude': False,
+                'longitude': False
+            },
+            color_continuous_scale='Blues',
+            zoom=10,
+            size_max=20
         )
-        waste_range = (
-            int(school_geo['Total_Waste_Cost'].min()),
-            int(school_geo['Total_Waste_Cost'].max())
+
+        fig.update_layout(
+            mapbox_style="open-street-map",
+            margin={"r": 10, "t": 50, "l": 10, "b": 10},
+            height=650,
+            coloraxis_colorbar=dict(
+                title="Waste Cost ($)",
+                tickprefix="$"
+            )
         )
-    else:
-        with st.sidebar:
-            st.subheader("Map Filters")
 
-            cost_range = st.slider(
-                "Production Cost Range ($)",
-                min_value=0,
-                max_value=int(school_geo['Production_Cost_Total'].max()),
-                value=(0, int(school_geo['Production_Cost_Total'].max())),
-                step=100
-            )
+        st.plotly_chart(fig, use_container_width=True)
 
-            waste_range = st.slider(
-                "Waste Cost Range ($)",
-                min_value=0,
-                max_value=int(school_geo['Total_Waste_Cost'].max()),
-                value=(0, int(school_geo['Total_Waste_Cost'].max())),
-                step=50
-            )
-
-        # Apply slider filtering only in "All Schools" mode
-        school_geo = school_geo[
-            (school_geo['Production_Cost_Total'] >= cost_range[0]) &
-            (school_geo['Production_Cost_Total'] <= cost_range[1]) &
-            (school_geo['Total_Waste_Cost'] >= waste_range[0]) &
-            (school_geo['Total_Waste_Cost'] <= waste_range[1])
-            ]
-
-    # Summary metrics
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Schools Displayed", school_geo['School Name'].nunique())
-    with col2:
-        st.metric("Total Cost", f"${school_geo['Production_Cost_Total'].sum():,.2f}")
-    with col3:
-        st.metric("Total Waste", f"${school_geo['Total_Waste_Cost'].sum():,.2f}")
-
-    # Create map
-    fig = px.scatter_map(
-        school_geo,
-        lat='latitude',
-        lon='longitude',
-        size='Production_Cost_Total',
-        color='Total_Waste_Cost',
-        hover_name='School Name',
-        hover_data={
-            'Production_Cost_Total': True,
-            'Total_Waste_Cost': True,
-            'latitude': False,
-            'longitude': False
-        },
-        color_continuous_scale='Blues',
-        zoom=10,
-        # title='School Breakfast Program: Geographic Distribution of Costs and Waste'
-    )
-
-    fig.update_layout(
-        mapbox_style="open-street-map",
-        margin={"r": 10, "t": 50, "l": 10, "b": 10},
-        height=650
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
+    except Exception as e:
+        st.error(f"Map rendering error: {str(e)}")
+        st.stop()
 
     st.text(" ")
-    st.text(" ")
+    st.text("  ")
 
     with st.expander("ℹ️ About this visualization"):
         st.markdown("""
@@ -1365,164 +1501,222 @@ elif selected_viz == "Geographic Distribution of Costs and Waste":
 # ---------------------------------------------------------------------------------------------------------
 
 elif selected_viz == "Interactive School Map with Layers":
-    # st.header("🗺️ Interactive School Map with Layers")
+    try:
+        # Apply global filters with validation
+        filtered_df = apply_filters(df, selected_school, date_range, menu_items)
 
-    # Apply global filters
-    filtered_df = apply_filters(df, selected_school, date_range, menu_items)
+        # Check for required columns
+        if 'latitude' not in filtered_df.columns or 'longitude' not in filtered_df.columns:
+            st.warning("Latitude/Longitude columns not found in data.")
+            st.stop()
 
-    if 'latitude' not in filtered_df.columns or 'longitude' not in filtered_df.columns:
-        st.warning("Latitude/Longitude columns not found in data.")
-        st.stop()
+        # Validate coordinate data
+        if filtered_df['latitude'].isna().any() or filtered_df['longitude'].isna().any():
+            st.warning("Some locations are missing coordinates. These records will be excluded.")
+            filtered_df = filtered_df.dropna(subset=['latitude', 'longitude'])
+            if filtered_df.empty:
+                st.warning("No records with valid coordinates remain.")
+                st.stop()
 
-    # Aggregate school data
-    school_geo = filtered_df.groupby(['School Name', 'latitude', 'longitude']).agg({
-        'Production_Cost_Total': 'sum',
-        'Total_Waste_Cost': 'sum'
-    }).reset_index()
+        # Aggregate school data with validation
+        school_geo = filtered_df.groupby(['School Name', 'latitude', 'longitude']).agg({
+            'Production_Cost_Total': 'sum',
+            'Total_Waste_Cost': 'sum'
+        }).reset_index()
 
-    if school_geo.empty:
-        st.warning("No schools match the selected filters.")
+        # Add your specific validation check
+        if school_geo['Total_Waste_Cost'].sum() == 0 or school_geo['Production_Cost_Total'].sum() == 0:
+            st.warning("No valid cost or waste data found for the selected filters. Please adjust your selections.")
+            st.stop()
+
+    except Exception as e:
+        st.error(f"Data processing error: {str(e)}")
         st.stop()
 
     # Determine if we're in single-school mode
     is_single_school = selected_school != "All Schools"
 
     # ---------------- Sidebar controls ----------------
-    if is_single_school:
-        # Don't apply sliders — just let the selected school pass through
-        cost_range = (
-            float(school_geo['Production_Cost_Total'].min()),
-            float(school_geo['Production_Cost_Total'].max())
-        )
-        waste_range = (
-            float(school_geo['Total_Waste_Cost'].min()),
-            float(school_geo['Total_Waste_Cost'].max())
-        )
-        layer_option = "Show Both"
-        top_n = "All"
-    else:
-        with st.sidebar:
-            st.subheader("Map Display Filters")
-
-            layer_option = st.radio(
-                "Layer View",
-                options=["Show Costs", "Show Waste", "Show Both"],
-                index=2,
-                horizontal=False,
-                key="layer_selector"
+    try:
+        if is_single_school:
+            # Single school mode - no sliders needed
+            cost_range = (
+                float(school_geo['Production_Cost_Total'].min()),
+                float(school_geo['Production_Cost_Total'].max())
             )
-
-            cost_range = st.slider(
-                "Production Cost Range ($)",
-                min_value=0,
-                max_value=int(school_geo['Production_Cost_Total'].max()),
-                value=(0, int(school_geo['Production_Cost_Total'].max())),
-                step=100,
-                key="map_cost_range"
+            waste_range = (
+                float(school_geo['Total_Waste_Cost'].min()),
+                float(school_geo['Total_Waste_Cost'].max())
             )
+            layer_option = "Show Both"
+            top_n = "All"
+        else:
+            # Multi-school mode with sliders
+            with st.sidebar:
+                st.subheader("Map Display Filters")
 
-            waste_range = st.slider(
-                "Waste Cost Range ($)",
-                min_value=0,
-                max_value=int(school_geo['Total_Waste_Cost'].max()),
-                value=(0, int(school_geo['Total_Waste_Cost'].max())),
-                step=50,
-                key="map_waste_range"
-            )
+                layer_option = st.radio(
+                    "Layer View",
+                    options=["Show Costs", "Show Waste", "Show Both"],
+                    index=2,
+                    horizontal=False,
+                    key="layer_selector"
+                )
 
-            top_n = st.selectbox(
-                "Number of Schools to Display",
-                options=[10, 20, 30, 50, 100, "All"],
-                index=2,
-                key="map_school_count"
-            )
+                # Calculate safe ranges
+                cost_max = max(1, int(school_geo['Production_Cost_Total'].max()))
+                waste_max = max(1, int(school_geo['Total_Waste_Cost'].max()))
 
-        # Only apply slider filters in multi-school mode
-        school_geo = school_geo[
-            (school_geo['Production_Cost_Total'] >= cost_range[0]) &
-            (school_geo['Production_Cost_Total'] <= cost_range[1]) &
-            (school_geo['Total_Waste_Cost'] >= waste_range[0]) &
-            (school_geo['Total_Waste_Cost'] <= waste_range[1])
-            ]
+                cost_range = st.slider(
+                    "Production Cost Range ($)",
+                    min_value=0,
+                    max_value=cost_max,
+                    value=(0, cost_max),
+                    step=max(100, cost_max // 100),
+                    key="map_cost_range"
+                )
 
-        if top_n != "All":
-            school_geo = school_geo.sort_values("Production_Cost_Total", ascending=False).head(int(top_n))
+                waste_range = st.slider(
+                    "Waste Cost Range ($)",
+                    min_value=0,
+                    max_value=waste_max,
+                    value=(0, waste_max),
+                    step=max(50, waste_max // 100),
+                    key="map_waste_range"
+                )
 
-    if top_n != "All" and not is_single_school:
-        school_geo = school_geo.sort_values("Production_Cost_Total", ascending=False).head(int(top_n))
+                top_n = st.selectbox(
+                    "Number of Schools to Display",
+                    options=[10, 20, 30, 50, 100, "All"],
+                    index=2,
+                    key="map_school_count"
+                )
 
-    if school_geo.empty:
-        st.warning("No schools match the selected filter values.")
+            # Apply filters
+            school_geo = school_geo[
+                (school_geo['Production_Cost_Total'] >= cost_range[0]) &
+                (school_geo['Production_Cost_Total'] <= cost_range[1]) &
+                (school_geo['Total_Waste_Cost'] >= waste_range[0]) &
+                (school_geo['Total_Waste_Cost'] <= waste_range[1])
+                ]
+
+            if top_n != "All":
+                school_geo = school_geo.nlargest(int(top_n), 'Production_Cost_Total')
+
+            if school_geo.empty:
+                st.warning("No schools match the selected filter values.")
+                st.stop()
+
+    except Exception as e:
+        st.error(f"Filter configuration error: {str(e)}")
         st.stop()
 
     # ---------------- Summary ----------------
-    all_menu_items = df['Name'].dropna().unique()
-    num_selected_menu_items = len(menu_items) if menu_items else len(all_menu_items)
+    try:
+        all_menu_items = df['Name'].dropna().unique()
+        num_selected_menu_items = len(menu_items) if menu_items else len(all_menu_items)
 
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.metric("Schools Displayed", school_geo['School Name'].nunique())
-    with col2:
-        st.metric("Total Cost", f"${school_geo['Production_Cost_Total'].sum():,.2f}")
-    with col3:
-        st.metric("Total Waste", f"${school_geo['Total_Waste_Cost'].sum():,.2f}")
-    with col4:
-        st.metric("Menu Items Selected", f"{num_selected_menu_items} / {len(all_menu_items)}")
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Schools Displayed", school_geo['School Name'].nunique())
+        with col2:
+            total_cost = school_geo['Production_Cost_Total'].sum()
+            st.metric("Total Cost", f"${total_cost:,.2f}")
+        with col3:
+            total_waste = school_geo['Total_Waste_Cost'].sum()
+            st.metric("Total Waste", f"${total_waste:,.2f}")
+        with col4:
+            st.metric("Menu Items Selected", f"{num_selected_menu_items} / {len(all_menu_items)}")
+
+        # Final validation before plotting
+        if total_cost == 0 and total_waste == 0:
+            st.warning("No valid cost or waste data to display after filtering.")
+            st.stop()
+
+    except Exception as e:
+        st.error(f"Metric calculation error: {str(e)}")
+        st.stop()
 
     # ---------------- Map Layers ----------------
-    fig = go.Figure()
+    try:
+        fig = go.Figure()
 
-    if layer_option in ["Show Costs", "Show Both"]:
-        fig.add_trace(go.Scattermap(
-            lon=school_geo['longitude'],
-            lat=school_geo['latitude'],
-            text=school_geo.apply(lambda row: f"{row['School Name']}<br>Cost: ${row['Production_Cost_Total']:,.2f}", axis=1),
-            marker=dict(
-                size=school_geo['Production_Cost_Total'] / 100,
-                color=school_geo['Production_Cost_Total'],
-                colorscale='Viridis',
-                colorbar_title="Cost ($)",
-                sizemode='area',
-                sizemin=5
-            ),
-            name='Production Costs'
-        ))
+        # Calculate dynamic sizing
+        cost_sizes = school_geo['Production_Cost_Total'] / school_geo['Production_Cost_Total'].max()
+        cost_sizes = cost_sizes.fillna(0) * 25 + 5  # Normalize to 5–30 px
+        waste_sizes = school_geo['Total_Waste_Cost'] / school_geo['Total_Waste_Cost'].max()
+        waste_sizes = waste_sizes.fillna(0) * 25 + 5
 
-    if layer_option in ["Show Waste", "Show Both"]:
-        fig.add_trace(go.Scattermap(
-            lon=school_geo['longitude'],
-            lat=school_geo['latitude'],
-            text=school_geo.apply(lambda row: f"{row['School Name']}<br>Waste: ${row['Total_Waste_Cost']:,.2f}", axis=1),
-            marker=dict(
-                size=school_geo['Total_Waste_Cost'] / 50,
-                color=school_geo['Total_Waste_Cost'],
-                colorscale='Blues',
-                colorbar_title="Waste ($)",
-                sizemode='area',
-                sizemin=5
-            ),
-            name='Food Waste'
-        ))
+        # Cost layer (base)
+        if layer_option in ["Show Costs", "Show Both"]:
+            fig.add_trace(go.Scattermap(
+                lon=school_geo['longitude'],
+                lat=school_geo['latitude'],
+                text=school_geo.apply(
+                    lambda
+                        row: f"{row['School Name']}<br><b>Cost:</b> ${row['Production_Cost_Total']:,.2f}<br><b>Waste:</b> ${row['Total_Waste_Cost']:,.2f}",
+                    axis=1
+                ),
+                marker=dict(
+                    size=cost_sizes,
+                    color=school_geo['Production_Cost_Total'],
+                    colorscale='YlOrBr',
+                    cmin=0,
+                    cmax=school_geo['Production_Cost_Total'].max(),
+                    colorbar=dict(title="Production Cost ($)", thickness=20),
+                    opacity=0.6,
+                    sizemode='diameter',
+                ),
+                name='Production Costs',
+                hoverinfo='text',
+                visible=True if layer_option != "Show Waste" else False
+            ))
 
-    # ---------------- Layout ----------------
-    fig.update_layout(
-        geo=dict(
-            scope='usa',
-            projection_type='equirectangular',
-            showland=True,
-            landcolor="rgb(243, 243, 243)",
-            subunitwidth=1,
-            countrywidth=1,
-            center=dict(lat=school_geo['latitude'].mean(), lon=school_geo['longitude'].mean()),
-            lataxis_range=[school_geo['latitude'].min() - 0.1, school_geo['latitude'].max() + 0.1],
-            lonaxis_range=[school_geo['longitude'].min() - 0.1, school_geo['longitude'].max() + 0.1],
-        ),
-        height=650,
-        margin={"r": 10, "t": 50, "l": 10, "b": 10}
-    )
+        # Waste layer (overlay)
+        if layer_option in ["Show Waste", "Show Both"]:
+            fig.add_trace(go.Scattermap(
+                lon=school_geo['longitude'],
+                lat=school_geo['latitude'],
+                text=school_geo.apply(
+                    lambda
+                        row: f"{row['School Name']}<br><b>Cost:</b> ${row['Production_Cost_Total']:,.2f}<br><b>Waste:</b> ${row['Total_Waste_Cost']:,.2f}",
+                    axis=1
+                ),
+                marker=dict(
+                    size=waste_sizes,
+                    color=school_geo['Total_Waste_Cost'],
+                    colorscale='PuBuGn',
+                    cmin=0,
+                    cmax=school_geo['Total_Waste_Cost'].max(),
+                    colorbar=dict(title="Waste Cost ($)", thickness=20),
+                    opacity=0.5,
+                    sizemode='diameter',
+                    symbol='circle'
+                ),
+                name='Food Waste',
+                hoverinfo='text',
+                visible=True if layer_option != "Show Costs" else False
+            ))
 
-    st.plotly_chart(fig, use_container_width=True)
+        # Map Layout
+        fig.update_layout(
+            mapbox_style="open-street-map",
+            mapbox_zoom=10,
+            mapbox_center={
+                "lat": school_geo['latitude'].mean(),
+                "lon": school_geo['longitude'].mean()
+            },
+            margin={"r": 10, "t": 40, "l": 10, "b": 10},
+            height=650,
+            legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
+            showlegend=True
+        )
 
+        st.plotly_chart(fig, use_container_width=True)
+
+    except Exception as e:
+        st.error(f"Map rendering error: {str(e)}")
+        st.stop()
 
     st.text(" ")
     st.text(" ")
@@ -1562,7 +1756,7 @@ elif selected_viz == "Enhanced School Region Map":
         st.stop()
 
     # Group and aggregate school data
-    filtered_df = apply_filters(df, selected_school, date_range, menu_items)
+    filtered_df = safe_filtered_df(df, selected_school, date_range, menu_items)
     school_stats = filtered_df.groupby(['School Name']).agg({
         'latitude': 'first',
         'longitude': 'first',
@@ -1574,6 +1768,7 @@ elif selected_viz == "Enhanced School Region Map":
     map_center = [df['latitude'].mean(), df['longitude'].mean()]
     m = folium.Map(location=map_center, zoom_start=11, tiles="cartodbpositron")
 
+
     # --- Color utilities ---
     def get_random_color():
         return "#{:02x}{:02x}{:02x}".format(
@@ -1581,6 +1776,7 @@ elif selected_viz == "Enhanced School Region Map":
             random.randint(100, 255),
             random.randint(100, 255)
         )
+
 
     region_colors = {
         feature['properties']['REGION']: get_random_color()
