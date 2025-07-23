@@ -1,22 +1,39 @@
-# HTML to CSV Parser for School Lunch Production Records
+# School Lunch Production Data Parser & Combiner
 
-This Python script parses structured HTML reports of school lunch production data and converts them into clean CSV files for analysis.
+This pipeline processes structured HTML reports of school lunch and breakfast production data and converts them into clean CSV files for analysis.
 
 ---
 
-## What It Does
+## 🔁 Overview: Step-by-Step Workflow
 
+- ✅ **1. Run the HTML to CSV Transformer**  
+  Use `data_transformer(HTML).py` to extract structured tables from `.html` reports and generate individual `.csv` files per report.
+
+- ✅ **2. Run the CSV Combiner Script**  
+  Use `csv_combiner.py` to merge the individual `.csv` files into two master datasets: one for lunch and one for breakfast.
+
+---
+
+## 🔍 What It Does
+
+### `data_transformer(HTML).py`
 - Reads all `.html` files from a specified folder.
-- Extracts tables for each school from the HTML using BeautifulSoup.
-- Parses planned, offered, served, discarded, and cost-related metrics.
-- Automatically detects the reporting date from the file or content.
-- Saves parsed results as individual `.csv` files.
+- Extracts tables for each school using BeautifulSoup.
+- Parses key metrics: planned, offered, served, discarded, and cost-related values.
+- Automatically detects the reporting date from the content or file name.
+- Saves parsed results as individual `.csv` files in the target directory.
+
+### `csv_combiner.py`
+- Collects all `.csv` files in an output folder.
+- Merges them into one combined dataset.
+- Optionally sorts by columns like `School_Name`, `Date`, and `Identifier`.
+- Saves final merged CSVs for both **Breakfast** and **Lunch** datasets.
 
 ---
 
-## Requirements
+## 🛠️ Requirements
 
-Make sure you have Python 3 and the required libraries:
+Make sure you have Python 3 and the required libraries installed:
 
 ```bash
 pip install pandas beautifulsoup4
@@ -24,48 +41,48 @@ pip install pandas beautifulsoup4
 
 ---
 
-## How to Use
+## ▶️ How to Run
 
-1. **Place your HTML files** into a folder on your local machine.
+### 1. Place Your HTML Files
+Put your `.html` reports into a local folder for either lunch or breakfast data.
 
-2. **Download the script** into a Python file (e.g., `html_to_csv_parser.py`).
+### 2. Run the HTML Parser
 
-3. **Set your input and output paths**:  
-   At the bottom of the script, modify this block:
+Open and modify the paths in `data_transformer(HTML).py`:
 
-   ```python
-   if __name__ == "__main__":
-       folder_path = "your/input/folder/path"
-       output_dir = "your/output/folder/path"
-       generate_csvs_from_folder(folder_path, output_dir)
-   
- ⚠️ Important: Use valid local paths. These are not auto-detected and must match your system's folder structure.
+```python
+folder_path = "your/html/folder/path"
+output_dir = "your/csv/output/folder"
+generate_csvs_from_folder(folder_path, output_dir)
+```
 
-4. **Run the script**:  
-   Open a terminal, navigate to the script’s directory, and run:
+Then run:
 
-5. **Check the output**:  
-   The script will create a .csv file for each .html file and save it in the output directory you specified.
+```bash
+python data_transformer(HTML).py
+```
 
+Each `.html` file will produce one `.csv` file.
 
 ---
 
-## Combine All CSVs Into One File
+### 3. Combine the CSV Files
 
-After generating individual CSV files from each HTML report, you can combine them into a single master CSV using the companion script `csv_combiner.py`.
-
-### How to Run
-
-1. Make sure your individual CSVs are saved in the output directory you specified earlier.
-
-2. Open the `csv_combiner.py` file and set the following variables at the bottom of the script:
+Edit the bottom of `csv_combiner.py`:
 
 ```python
-input_dir = "your/output/folder/path"
-output_file = "your/desired/final/combined_file.csv"
+input_dir = "your/csv/output/folder"
+output_file = "combined_file.csv"
 sort_columns = ['School_Name', 'Date', 'Identifier']
 ```
 
-This will generate a single combined CSV file containing all records sorted by school name, date, and identifier.
+Run:
 
-⚠️ Note: Ensure input_dir matches the path where your individual CSVs were saved
+```bash
+python csv_combiner.py
+```
+
+This will produce a combined, clean CSV file sorted by key dimensions.
+
+---
+
